@@ -9,22 +9,22 @@ x1, x2 = sympy.symbols("x1 x2")
 
 # Definition of the functions
 functions = [
-#    (
-#        -(-2*x1**2 + 3*x1*x2 -1.5*x2**2-1.3),
-#        np.array([-4, 4]).astype(float),
-#        "Function A"
-#    ),
+    (
+        -(-2*x1**2 + 3*x1*x2 -1.5*x2**2-1.3),
+        np.array([-4, 4]).astype(float),
+        "Function A"
+    ),
     (
         (4-2.1*x1**2+((x1**4)/3))*x1**2+x1*x2+(-4+4*x2**2)*x2**2,
         np.array([0.5, 1]).astype(float),
         "Function B"
     ),
-#    (
-#        # A = 10 and n = 2 (to allow visualization)
-#        10 * 2 + (x1**2 - 10 * sympy.cos(2*sympy.pi*x1)) + (x2**2 - 10 * sympy.cos(2*sympy.pi*x2)),
-#        np.array([-2, 2]).astype(float),
-#        "Rastrigin Function"
-#    )
+    (
+        # A = 10 and n = 2 (to allow visualization)
+        10 * 2 + (x1**2 - 10 * sympy.cos(2*sympy.pi*x1)) + (x2**2 - 10 * sympy.cos(2*sympy.pi*x2)),
+        np.array([-2, 2]).astype(float),
+        "Rastrigin Function"
+    )
 ]
 
 # Definition of the solution methods
@@ -33,21 +33,21 @@ methods = [
         gradientDescent,
         "Gradient Descent"
     ),
-#    (
-#        newtonMethod,
-#        "Newton's Method"
-#    ),
-#    (
-#        newtonMethod,
-#        "Hill Climber"
-#    )
+    (
+        newtonMethod,
+        "Newton's Method"
+    ),
+    (
+        hill_climbing,
+        "Hill Climber"
+    )
 ]
 
 # Evaluate the functions
 solutions = []
 for function, startPoint, _ in functions:
     for method, w in methods:
-        solutions.append(method(1, startPoint.copy(), function, 0.001, x1, x2))
+        solutions.append(method(0.1, startPoint.copy(), function, 0.001, x1, x2))
 
 # Lambdification of the functions
 fx = [sympy.lambdify((x1, x2), func, modules="numpy") for func, _, _ in functions]
