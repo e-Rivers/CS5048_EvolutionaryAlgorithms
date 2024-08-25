@@ -53,8 +53,11 @@ def gradientDescent(t, x, func, tol, *args):
 
 
 ##############################################################
-# Newton's Method
+##################### NEWTON'S METHOD ########################
+##############################################################
 def newtonMethod(t, x, func, tol, *args):
+
+    print(func)
 
     variables = args 
     # Definition of the 1st Derivative (Jacobian Matrix)
@@ -82,3 +85,61 @@ def newtonMethod(t, x, func, tol, *args):
 
     return solHistory
 
+
+##############################################################
+####################### HILL CLIMBING ########################
+##############################################################
+
+def hill_climbing(t, x, func, tol, *args):
+
+    # t param : Step size
+    # x param : Start point
+    # func param : Function
+    # tol param : Tolerance
+    # args param : variables (x1, x2)
+
+    variables = args
+    current_solution = x
+    x1, x2 = sympy.symbols('x1 x2')
+    current_value = func.subs({x1: x[0], x2: x[1]}).evalf()
+
+
+    
+    # Start point
+    #agragar lo de que regrese la lista de soluciones
+    #current_solution = [0.5,1]
+    #current_value = objective_functionb(current_solution[0], current_solution[1])
+    
+    step_size = t
+    max_iterations = 1000
+
+    # To store the history of solutions
+    solHistory = [x.copy()]
+
+    for _ in range(max_iterations):
+        x, y = current_solution
+        
+        # Generate neighbors by adjusting each variable separately + -
+        neighbors = [
+            [x + step_size, y],
+            [x - step_size, y],
+            [x, y + step_size],
+            [x, y - step_size]
+        ]
+        
+        # Evaluate neighbors and select the one that will give the maximum function
+
+        next_solution = min(neighbors, key=lambda sol: func.subs({x1: sol[0], x2: sol[1]}).evalf())
+        next_value = func.subs({x1: next_solution[0], x2: next_solution[1]}).evalf()
+    
+        
+        # Check if the neighbor is better
+        if next_value < current_value:
+            current_solution = next_solution
+            current_value = next_value
+            solHistory.append(current_solution.copy())
+        else:
+            # If no better neighbors, return current solution
+            break
+
+    return solHistory
