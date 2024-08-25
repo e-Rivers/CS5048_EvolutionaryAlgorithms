@@ -7,7 +7,6 @@ def getStepSize_WolfeConditions(t, x, p, f, df):
     flag = False
 
     while not flag:
-        print(t)
         # Wolfe Condition 1 (Sufficient Decrease)
         if f(*(x + t*p)) > f(*x) + c1*t*np.matmul(df(*x).T, p):
             t /= 2
