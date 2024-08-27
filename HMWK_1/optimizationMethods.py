@@ -1,5 +1,7 @@
 import numpy as np
 import sympy
+import math
+
 
 def getStepSize_WolfeConditions(t, x, p, f, df):
     c1 = 1e-4
@@ -90,43 +92,53 @@ def newtonMethod(t, x, func, tol, *args):
 ####################### HILL CLIMBING ########################
 ##############################################################
 
+def generate_neighbors(current_solution, step_size, radius):
+    x, y = current_solution
+    neighbors = []
+    
+    # Generate neighbors within the specified radius
+    for dx in range(-radius, radius + 1):
+        for dy in range(-radius, radius + 1):
+            distance = math.sqrt(dx**2 + dy**2)
+            if distance <= radius:
+                neighbors.append([x + dx * step_size, y + dy * step_size])
+    
+    return neighbors
+
+
 def hill_climbing(t, x, func, tol, *args):
 
     # t param : Step size
-    # x param : Start point
-    # func param : Function
+    # x param : Start point as an array
+    # func param : Function to evaluate
     # tol param : Tolerance
     # args param : variables (x1, x2)
 
-    variables = args
+    # Change of name of the variables in order to being more readable
+    step_size = t
+    max_iterations = 1000
     current_solution = x
+
+    # Function evaluation for the starting point
     x1, x2 = sympy.symbols('x1 x2')
     current_value = func.subs({x1: x[0], x2: x[1]}).evalf()
 
-
-    
-    # Start point
-    #agragar lo de que regrese la lista de soluciones
-    #current_solution = [0.5,1]
-    #current_value = objective_functionb(current_solution[0], current_solution[1])
-    
-    step_size = t
-    max_iterations = 1000
-
     # To store the history of solutions
-    solHistory = [x.copy()]
+    solHistory = [current_solution.copy()]
 
     for _ in range(max_iterations):
         x, y = current_solution
         
-        # Generate neighbors by adjusting each variable separately + -
-        neighbors = [
-            [x + step_size, y],
-            [x - step_size, y],
-            [x, y + step_size],
-            [x, y - step_size]
-        ]
+        # Generate neighbors by adjusting each variable separately
         
+        #neighbors = [
+        #    [x + step_size, y],
+        #    [x - step_size, y],
+        #    [x, y + step_size],
+        #    [x, y - step_size]
+        #]
+        radius = 2
+        neighbors = generate_neighbors(current_solution, step_size, radius)
         # Evaluate neighbors and select the one that will give the maximum function
 
         next_solution = min(neighbors, key=lambda sol: func.subs({x1: sol[0], x2: sol[1]}).evalf())

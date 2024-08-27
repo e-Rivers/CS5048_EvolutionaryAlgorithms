@@ -12,18 +12,21 @@ functions = [
     (
         -(-2*x1**2 + 3*x1*x2 -1.5*x2**2-1.3),
         np.array([-4, 4]).astype(float),
-        "Function A"
+        "Function A",
+        np.array([0, 0]).astype(float) 
     ),
     (
         (4-2.1*x1**2+((x1**4)/3))*x1**2+x1*x2+(-4+4*x2**2)*x2**2,
         np.array([0.5, 1]).astype(float),
-        "Function B"
+        "Function B",
+        np.array([0, 0]).astype(float)
     ),
     (
         # A = 10 and n = 2 (to allow visualization)
         10 * 2 + (x1**2 - 10 * sympy.cos(2*sympy.pi*x1)) + (x2**2 - 10 * sympy.cos(2*sympy.pi*x2)),
         np.array([-2, 2]).astype(float),
-        "Rastrigin Function"
+        "Rastrigin Function",
+        np.array([0, 0]).astype(float)
     )
 ]
 
@@ -45,12 +48,12 @@ methods = [
 
 # Evaluate the functions
 solutions = []
-for function, startPoint, _ in functions:
+for function, startPoint, _, _ in functions:
     for method, w in methods:
-        solutions.append(method(0.1, startPoint.copy(), function, 0.001, x1, x2))
+        solutions.append(method(0.01, startPoint.copy(), function, 0.001, x1, x2))
 
 # Lambdification of the functions
-fx = [sympy.lambdify((x1, x2), func, modules="numpy") for func, _, _ in functions]
+fx = [sympy.lambdify((x1, x2), func, modules="numpy") for func, _, _ , _ in functions]
 
 
 # Save a report with the results
@@ -62,7 +65,7 @@ with open("report.txt", "w") as report:
             report.write(f"\t\t- Point Found: {(point := solutions[i*3 +j][-1])}\n")
             report.write(f"\t\t- Evaluation: {fx[i](*point)}\n")
             report.write(f"\t\t- Iterations: {len(solutions[i*3 +j])}\n")
-            report.write(f"\t\t- Two Norm Error: MISSING...\n")
+            report.write(f"\t\t- Two Norm Error: {np.linalg.norm(solutions[i*3 + j][-1] - functions[i][3])}\n")
             print(f"{solutions[i*3 + j]}\n\n")
         report.write("\n\n")
         
