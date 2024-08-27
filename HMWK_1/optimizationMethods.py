@@ -97,6 +97,18 @@ def newtonMethod(t, x, func, tol, *args):
 ##############################################################
 
 def generate_neighbors(current_solution, step_size, radius):
+
+    """
+    This function generates the neighborhood.
+
+    -----------
+    Parameters:
+
+
+    -----------
+    Output:
+    
+    """
     x, y = current_solution
     neighbors = []
     
@@ -112,11 +124,33 @@ def generate_neighbors(current_solution, step_size, radius):
 
 def hill_climbing(t, x, func, tol, *args):
 
-    # t param : Step size
-    # x param : Start point as an array
-    # func param : Function to evaluate
-    # tol param : Tolerance
-    # args param : variables (x1, x2)
+    """
+    This function performs the Hill Climber optimization method.
+
+    -----------
+    Parameters:
+    
+    t : float
+    step size
+
+    x : array
+    start point
+
+    func : (no sé que tipo es func)
+    objective function
+
+    tol : float
+    tolerance
+
+    args : (no sé que tipo es func)
+    variables (x1, x2)
+
+    ----------------
+    Output:
+
+    It returns the history of the solutions explored, being the last one the point that according to this method minimize the objective function.
+    """
+
 
     # Change of name of the variables in order to being more readable
     step_size = t
