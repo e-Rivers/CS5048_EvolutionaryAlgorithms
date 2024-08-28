@@ -9,6 +9,11 @@ from scipy import optimize
 x1, x2 = sympy.symbols("x1 x2")
 
 # Definition of the functions
+# Each element in the list represents a function and contains the following elements:
+# 1. The mathematical expression of the function.
+# 2. The starting point for the variables x1 and x2, represented as a NumPy array.
+# 3. A string with the name of the function.
+# 4. The known or expected optimal solution, represented as a NumPy array.
 functions = [
     (
         -(-2*x1**2 + 3*x1*x2 -1.5*x2**2-1.3),
@@ -47,10 +52,13 @@ methods = [
     )
 ]
 
-# Evaluate the functions
+# Create an empty array to store the results of the implementation of the methods
 solutions = []
+
+# Evaluate the functions
 for function, startPoint, _, _ in functions:
     for method, w in methods:
+        # The resulting solution is appended to the solutions list.
         solutions.append(method(0.01, startPoint.copy(), function, 0.001, x1, x2))
 
 # Lambdification of the functions
