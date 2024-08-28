@@ -21,17 +21,17 @@
 		- Point Found: [-0.08971309  0.71264157]
 		- Evaluation: -1.0316283888031479
 		- Iterations: 54
-		- Two Norm Error: 0.7182662817373022
+		- Two Norm Error: 0.1795551119364984
 	◙ Newton's Method
 		- Point Found: [-1.10920534  0.76826809]
 		- Evaluation: 0.5437186009781853
 		- Iterations: 6
-		- Two Norm Error: 1.349285863397548
+		- Two Norm Error: 1.2003362942865505
 	◙ Hill Climber
 		- Point Found: [-0.09000000000000019, 0.7099999999999997]
 		- Evaluation: -1.031570363853
 		- Iterations: 45
-		- Two Norm Error: 0.7156814934033153
+		- Two Norm Error: 0.1798616350993705
 
 
 ⦿ Rastrigin Function

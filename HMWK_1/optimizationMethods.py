@@ -104,10 +104,19 @@ def generate_neighbors(current_solution, step_size, radius):
     -----------
     Parameters:
 
+    current_solution : array
+        The current solution coordinates (x, y).
+
+    step_size : float 
+        The step size to move in the neighborhood.
+
+    radius : int
+        The radius within which to generate neighbors.
 
     -----------
-    Output:
-    
+    Output: list    
+        A list of neighboring solutions.
+
     """
     x, y = current_solution
     neighbors = []
@@ -131,28 +140,29 @@ def hill_climbing(t, x, func, tol, *args):
     Parameters:
     
     t : float
-    step size
+        step size
 
     x : array
-    start point
+        starting point coordinates
 
-    func : (no sé que tipo es func)
-    objective function
+    func : sympy expression
+        objective function to minimize
 
     tol : float
     tolerance
 
-    args : (no sé que tipo es func)
-    variables (x1, x2)
+    args : 
+        Additional arguments (e.g., variables x1, x2)
 
     ----------------
-    Output:
-
-    It returns the history of the solutions explored, being the last one the point that according to this method minimize the objective function.
+    Output: list
+        It returns the history of the solutions explored, 
+        being the last one the point that according to this 
+        method minimize the objective function.
     """
 
 
-    # Change of name of the variables in order to being more readable
+    # Rename variables for readability
     step_size = t
     max_iterations = 1000
     current_solution = x
@@ -167,29 +177,22 @@ def hill_climbing(t, x, func, tol, *args):
     for _ in range(max_iterations):
         x, y = current_solution
         
-        # Generate neighbors by adjusting each variable separately
-        
-        #neighbors = [
-        #    [x + step_size, y],
-        #    [x - step_size, y],
-        #    [x, y + step_size],
-        #    [x, y - step_size]
-        #]
+        #Generate neighbors within a specified radius
         radius = 2
         neighbors = generate_neighbors(current_solution, step_size, radius)
-        # Evaluate neighbors and select the one that will give the maximum function
-
+        
+        # Evaluate neighbors and select the one that minimizes the objective function
         next_solution = min(neighbors, key=lambda sol: func.subs({x1: sol[0], x2: sol[1]}).evalf())
         next_value = func.subs({x1: next_solution[0], x2: next_solution[1]}).evalf()
     
         
-        # Check if the neighbor is better
+        # If the best neighbor improves the current solution, move to it
         if next_value < current_value:
             current_solution = next_solution
             current_value = next_value
             solHistory.append(current_solution.copy())
         else:
-            # If no better neighbors, return current solution
+            # If no improvement, stop the search
             break
 
     return solHistory
