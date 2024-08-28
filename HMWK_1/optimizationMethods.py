@@ -285,7 +285,8 @@ def hill_climbing(t, x, func, tol, maxIter, variables):
             #current_solution = np.array(next_solution).astype(np.float64)
             current_solution = next_solution
             current_value = next_value
-            solHistory.append(current_solution.copy())
+            solHistory.append([float(val) for val in current_solution])
+
         else:
             # If no improvement, stop the search
             break
