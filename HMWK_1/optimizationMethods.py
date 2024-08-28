@@ -7,6 +7,35 @@ import math
 ##############################################################
 
 def getStepSize_WolfeConditions(t, x, p, f, df):
+
+    """
+    This function is an extention for the Gradient Descent (and could
+    even be used for the Newton Method) to compute the step size based
+    on the Wolfe Conditions
+
+    -----------
+    Parameters:
+    
+    t : float
+        current step size
+
+    x : array
+        current point coordinates
+
+    p : array
+        direction in which to move
+
+    f : lambidied sympy expression
+        objective function to minimize
+
+    df : lambidied sympy expression
+        first derivative of the objective function
+
+    ----------------
+    Output: float
+        Returns the new step size for this iteration.
+    """
+
     c1 = 1e-4
     c2 = 0.9 
     flag = False
@@ -25,6 +54,34 @@ def getStepSize_WolfeConditions(t, x, p, f, df):
     return t
 
 def gradientDescent(t, x, func, tol, *args):
+
+    """
+    This function performs the Gradient Descent optimization method.
+
+    -----------
+    Parameters:
+    
+    t : float
+        initial guess of step size
+
+    x : array
+        starting point coordinates
+
+    func : sympy expression
+        objective function to minimize
+
+    tol : float
+    tolerance
+
+    args : 
+        Additional arguments (e.g., variables x1, x2)
+
+    ----------------
+    Output: list 
+        It returns the history of the solutions explored, 
+        being the last one the point that according to this 
+        method minimize the objective function.
+    """
 
     variables = args
     # Definition of the 1st Derivative (Jacobian Matrix)
@@ -63,7 +120,33 @@ def gradientDescent(t, x, func, tol, *args):
 
 def newtonMethod(t, x, func, tol, *args):
 
-    print(func)
+    """
+    This function performs the Newton's optimization method.
+
+    -----------
+    Parameters:
+    
+    t : float
+        initial guess of step size
+
+    x : array
+        starting point coordinates
+
+    func : sympy expression
+        objective function to minimize
+
+    tol : float
+    tolerance
+
+    args : 
+        Additional arguments (e.g., variables x1, x2)
+
+    ----------------
+    Output: list 
+        It returns the history of the solutions explored, 
+        being the last one the point that according to this 
+        method minimize the objective function.
+    """
 
     variables = args 
     # Definition of the 1st Derivative (Jacobian Matrix)
@@ -140,7 +223,7 @@ def hill_climbing(t, x, func, tol, *args):
     Parameters:
     
     t : float
-        step size
+        initial guess of step size
 
     x : array
         starting point coordinates
