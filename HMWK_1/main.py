@@ -20,7 +20,7 @@ functions = [
         (4-2.1*x1**2+((x1**4)/3))*x1**2+x1*x2+(-4+4*x2**2)*x2**2,
         np.array([0.5, 1]).astype(float),
         "Function B",
-        np.array([0, 0]).astype(float)
+        np.array([0.08984201774712433, 0.7126563947865581]).astype(float)
     ),
     (
         # A = 10 and n = 2 (to allow visualization)
