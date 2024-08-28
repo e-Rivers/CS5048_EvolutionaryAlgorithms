@@ -161,7 +161,6 @@ def hill_climbing(t, x, func, tol, *args):
         method minimize the objective function.
     """
 
-
     # Rename variables for readability
     step_size = t
     max_iterations = 1000
@@ -174,6 +173,8 @@ def hill_climbing(t, x, func, tol, *args):
     # To store the history of solutions
     solHistory = [current_solution.copy()]
 
+
+    # Iterate until the solution is found
     for _ in range(max_iterations):
         x, y = current_solution
         
