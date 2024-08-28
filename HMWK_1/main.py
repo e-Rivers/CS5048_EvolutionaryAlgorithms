@@ -4,6 +4,18 @@ import sympy
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+# Ask for input variables
+print("Would you like to setup the parameters manually or go with the default values?")
+print("Initial guess for step size: 0.01")
+print("Tolerance with which to accept a solution: 0.001")
+print("Maximum number of iterations allowed: 1000")
+setup = input("\nGo with default values? [y/n] ")
+stepSize = 0.01 if setup == "y" else float(input("Set an initial guess for the step size: "))
+tolerance = 0.001 if setup == "y" else float(input("Set a tolerance value: "))
+maxIterations = 1000 if setup == "y" else float(input("Set the maximum number of iterations: "))
+
+# Define the variables as sympy symbols (to allow symbolic operations, e.g. derivative)
 x1, x2 = sympy.symbols("x1 x2")
 
 # Definition of the functions
@@ -58,7 +70,7 @@ solutions = []
 for function, startPoint, _, _ in functions:
     for method, w in methods:
         # The resulting solution (a list of points) is appended to the solutions list.
-        solutions.append(method(0.01, startPoint.copy(), function, 0.001, x1, x2))
+        solutions.append(method(stepSize, startPoint.copy(), function, tolerance, maxIterations, (x1, x2)))
 
 # Lambdification of the functions
 # This is so they can be called in the form f(x1, x2)
@@ -74,8 +86,9 @@ with open("report.txt", "w") as report:
             report.write(f"\t\t- Point Found: {(point := solutions[i*3 +j][-1])}\n")
             report.write(f"\t\t- Evaluation: {fx[i](*point)}\n")
             report.write(f"\t\t- Iterations: {len(solutions[i*3 +j])}\n")
-            report.write(f"\t\t- Two Norm Error: {np.linalg.norm(solutions[i*3 + j][-1] - functions[i][3], ord=2)}\n")
+            report.write(f"\t\t- Two Norm Error: {np.linalg.norm(solutions[i*3 + j][-1] - functions[i][3])}\n")
             print(f"{solutions[i*3 + j]}\n\n")
+            print(type(solutions[i*3 + j][-1][0]))
         report.write("\n\n")
         
 # Creation of a grid from -6 to 6 for plotting of the contour plots

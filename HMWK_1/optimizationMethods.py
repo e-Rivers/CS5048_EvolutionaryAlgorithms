@@ -54,7 +54,7 @@ def getStepSize_WolfeConditions(t, x, p, f, df):
 
     return t
 
-def gradientDescent(t, x, func, tol, *args):
+def gradientDescent(t, x, func, tol, maxIter, variables):
 
     """
     This function performs the Gradient Descent optimization method.
@@ -72,10 +72,13 @@ def gradientDescent(t, x, func, tol, *args):
         objective function to minimize
 
     tol : float
-    tolerance
+        tolerance with which to stop iterating
 
-    args : 
-        Additional arguments (e.g., variables x1, x2)
+    maxIter : int
+        Maximum number of iterations allowed
+
+    variables : tuple 
+        Sympy variables x1 and x2
 
     ----------------
     Output: list 
@@ -84,7 +87,6 @@ def gradientDescent(t, x, func, tol, *args):
         method minimize the objective function.
     """
 
-    variables = args
     # Definition of the 1st Derivative (Jacobian Matrix)
     jacobianMat = sympy.Matrix([[sympy.diff(func, var)] for var in variables])
 
@@ -95,7 +97,8 @@ def gradientDescent(t, x, func, tol, *args):
     # To store the history of solutions
     solHistory = [x.copy()]
 
-    while True:
+    # Loop until a solution is found or the max iterations is reached
+    for _ in range(maxIter):
         # Compute the search direction -df(x)
         p = -np.array(df(*x)).astype(float).flatten()
 
@@ -119,7 +122,7 @@ def gradientDescent(t, x, func, tol, *args):
 ##################### NEWTON'S METHOD ########################
 ##############################################################
 
-def newtonMethod(t, x, func, tol, *args):
+def newtonMethod(t, x, func, tol, maxIter, variables):
 
     """
     This function performs the Newton's optimization method.
@@ -137,10 +140,13 @@ def newtonMethod(t, x, func, tol, *args):
         objective function to minimize
 
     tol : float
-    tolerance
+        tolerance with which to stop iterating
 
-    args : 
-        Additional arguments (e.g., variables x1, x2)
+    maxIter : int
+        Maximum number of iterations allowed
+
+    variables : tuple 
+        Sympy variables x1 and x2
 
     ----------------
     Output: list 
@@ -149,7 +155,6 @@ def newtonMethod(t, x, func, tol, *args):
         method minimize the objective function.
     """
 
-    variables = args 
     # Definition of the 1st Derivative (Jacobian Matrix)
     jacobianMat = sympy.Matrix([[sympy.diff(func, var)] for var in variables])
     # Definition of the 2nd Derivative (Hessian Matrix)
@@ -163,7 +168,8 @@ def newtonMethod(t, x, func, tol, *args):
     # To store the history of solutions
     solHistory = [x.copy()]
 
-    while True:
+    # Loop until a solution is found or the max iterations is reached
+    for _ in range(maxIter):
         # Update the current solution
         x = x - np.matmul(np.linalg.inv(np.array(ddf(*x))), (grad := np.array(df(*x)).flatten()))
 
@@ -215,7 +221,7 @@ def generate_neighbors(current_solution, step_size, radius):
     return neighbors
 
 
-def hill_climbing(t, x, func, tol, *args):
+def hill_climbing(t, x, func, tol, maxIter, variables):
 
     """
     This function performs the Hill Climber optimization method.
@@ -233,10 +239,13 @@ def hill_climbing(t, x, func, tol, *args):
         objective function to minimize
 
     tol : float
-    tolerance
+        tolerance with which to stop iterating
 
-    args : 
-        Additional arguments (e.g., variables x1, x2)
+    maxIter : int
+        Maximum number of iterations allowed
+
+    variables : tuple 
+        Sympy variables x1 and x2
 
     ----------------
     Output: list
@@ -247,11 +256,11 @@ def hill_climbing(t, x, func, tol, *args):
 
     # Rename variables for readability
     step_size = t
-    max_iterations = 1000
+    max_iterations = maxIter
     current_solution = x
 
     # Function evaluation for the starting point
-    x1, x2 = sympy.symbols('x1 x2')
+    x1, x2 = variables
     current_value = func.subs({x1: x[0], x2: x[1]}).evalf()
 
     # To store the history of solutions
@@ -273,6 +282,7 @@ def hill_climbing(t, x, func, tol, *args):
         
         # If the best neighbor improves the current solution, move to it
         if next_value < current_value:
+            #current_solution = np.array(next_solution).astype(np.float64)
             current_solution = next_solution
             current_value = next_value
             solHistory.append(current_solution.copy())
