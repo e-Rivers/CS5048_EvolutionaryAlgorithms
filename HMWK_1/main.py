@@ -4,8 +4,6 @@ import sympy
 import numpy as np
 import matplotlib.pyplot as plt
 
-from scipy import optimize
-
 x1, x2 = sympy.symbols("x1 x2")
 
 # Definition of the functions
@@ -56,16 +54,18 @@ methods = [
 solutions = []
 
 # Evaluate the functions
+# For each problem, test all the solution methods
 for function, startPoint, _, _ in functions:
     for method, w in methods:
-        # The resulting solution is appended to the solutions list.
+        # The resulting solution (a list of points) is appended to the solutions list.
         solutions.append(method(0.01, startPoint.copy(), function, 0.001, x1, x2))
 
 # Lambdification of the functions
+# This is so they can be called in the form f(x1, x2)
 fx = [sympy.lambdify((x1, x2), func, modules="numpy") for func, _, _ , _ in functions]
 
 
-# Save a report with the results
+# Export the results to a txt file
 with open("report.txt", "w") as report:
     for i in range(len(functions)):
         report.write(f"⦿ {functions[i][2]}\n")
@@ -74,19 +74,22 @@ with open("report.txt", "w") as report:
             report.write(f"\t\t- Point Found: {(point := solutions[i*3 +j][-1])}\n")
             report.write(f"\t\t- Evaluation: {fx[i](*point)}\n")
             report.write(f"\t\t- Iterations: {len(solutions[i*3 +j])}\n")
-            report.write(f"\t\t- Two Norm Error: {np.linalg.norm(solutions[i*3 + j][-1] - functions[i][3])}\n")
+            report.write(f"\t\t- Two Norm Error: {np.linalg.norm(solutions[i*3 + j][-1] - functions[i][3], ord=2)}\n")
             print(f"{solutions[i*3 + j]}\n\n")
         report.write("\n\n")
         
-# Plotting of the contour plots and the points found by the algorithms
+# Creation of a grid from -6 to 6 for plotting of the contour plots
 x, y = np.meshgrid((linspace := np.linspace(-6, 6, 200)), linspace)
 
+# Create a grid of 3x3 (rows are the problems/functions & cols are the solution methods)
 fig, ax = plt.subplots(3, 3, figsize=(12, 8))
 fig.suptitle("Contour Plots & Solutions Reached")
 
 for i in range(len(functions)):
     for j in range(len(methods)):
+        # Plot the contour plot based on the points in the grid and the function
         contourPlot = ax[i, j].contour(x, y, fx[i](x, y), levels=20)
+        # Plot the solution found by each method (all the points of all iterations)
         ax[i, j].plot(*zip(*solutions[i*3 + j]), marker=".", linestyle="-", color="red")
     ax[i, 0].set_ylabel(functions[i][2])
 

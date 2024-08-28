@@ -36,6 +36,7 @@ def getStepSize_WolfeConditions(t, x, p, f, df):
         Returns the new step size for this iteration.
     """
 
+    # Default values for the constants and parameters
     c1 = 1e-4
     c2 = 0.9 
     flag = False
@@ -47,7 +48,7 @@ def getStepSize_WolfeConditions(t, x, p, f, df):
         # Wolfe Condition 2 (Curvature)
         elif np.matmul(df(*(x+t*p)).T, p) < c2*np.matmul(df(*x).T, p):
             t *= 2
-        # Both conditions are met
+        # Both conditions are met (exit the loop)
         else:
             flag = True
 
