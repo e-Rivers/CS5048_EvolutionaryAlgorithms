@@ -80,14 +80,13 @@ fx = [sympy.lambdify((x1, x2), func, modules="numpy") for func, _, _ , _ in func
 with open("report.txt", "w") as report:
     for i in range(len(functions)):
         report.write(f"⦿ {functions[i][2]}\n")
+        report.write(f"- Real Evaluation: {fx[i](*functions[i][3])}\n")
         for j in range(len(methods)):
             report.write(f"\t◙ {methods[j][1]}\n")
             report.write(f"\t\t- Point Found: {(point := solutions[i*3 +j][-1])}\n")
             report.write(f"\t\t- Evaluation: {fx[i](*point)}\n")
             report.write(f"\t\t- Iterations: {len(solutions[i*3 +j])}\n")
             report.write(f"\t\t- Two Norm Error: {np.linalg.norm(solutions[i*3 + j][-1] - functions[i][3])}\n")
-            print(f"{solutions[i*3 + j]}\n\n")
-            print(type(solutions[i*3 + j][-1][0]))
         report.write("\n\n")
         
 # Creation of a grid from -6 to 6 for plotting of the contour plots
