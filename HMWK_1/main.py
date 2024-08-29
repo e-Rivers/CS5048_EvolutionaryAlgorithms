@@ -12,7 +12,7 @@ print("Maximum number of iterations allowed: 1000")
 setup = input("\nGo with default values? [y/n] ")
 stepSize = 0.01 if setup == "y" else float(input("Set an initial guess for the step size: "))
 tolerance = 0.001 if setup == "y" else float(input("Set a tolerance value: "))
-maxIterations = 1000 if setup == "y" else float(input("Set the maximum number of iterations: "))
+maxIterations = 1000 if setup == "y" else int(input("Set the maximum number of iterations: "))
 
 # Define the variables as sympy symbols (to allow symbolic operations, e.g. derivative)
 x1, x2 = sympy.symbols("x1 x2")

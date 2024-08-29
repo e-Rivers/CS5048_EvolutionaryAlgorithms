@@ -273,6 +273,11 @@ def hill_climbing(t, x, func, tol, maxIter, variables):
         
         #Generate neighbors within a specified radius
         radius = 2
+
+        #check that the radius is not going to look outside the limits
+        while not (x - 2 >= -6 and y + 2 <= 6) and radius > 0:
+            radius -= 0.5
+        
         neighbors = generate_neighbors(current_solution, step_size, radius)
         
         # Evaluate neighbors and select the one that minimizes the objective function
