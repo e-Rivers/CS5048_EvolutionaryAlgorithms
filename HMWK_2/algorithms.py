@@ -3,11 +3,16 @@ import random
 
 # Father class: GeneticAlgorithm
 class GeneticAlgorithm:
-    def __init__(self, popu_size, num_generations, ind_size):
+
+    def __init__(self, popu_size, num_generations, ind_size, Pc=0.9, Pm=0.1):
         self.pop_size = popu_size
         self.num_generations = num_generations
         self.ind_size = ind_size
         self.population = self.initialize_population()
+        self.Pc = Pc  
+        self.Pm = Pm  
+
+        
 
     def initialize_population(self):
         raise NotImplementedError
