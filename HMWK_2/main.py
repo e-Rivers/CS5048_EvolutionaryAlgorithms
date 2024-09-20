@@ -4,19 +4,18 @@ import matplotlib.pyplot as plt
 
 
 # Ask for input variables
-#print("Would you like to setup the parameters manually or go with the default values?")
-#print("Initial guess for step size: 0.01")
-#print("Tolerance with which to accept a solution: 0.001")
-#print("Maximum number of iterations allowed: 1000")
-#setup = input("\nGo with default values? [y/n] ")
-#stepSize = 0.01 if setup == "y" else float(input("Set an initial guess for the step size: "))
-#tolerance = 0.001 if setup == "y" else float(input("Set a tolerance value: "))
-#maxIterations = 1000 if setup == "y" else int(input("Set the maximum number of iterations: "))
+print("Would you like to setup the parameters manually or go with the default values?")
+# WE CAN CHANGE THIS DEFAULT VALUES LATER
+print("Default population size: 4") 
+print("Default number of generations: 100")
+setup = input("\nGo with default values? [y/n] ")
+populationSize = 4 if setup == "y" else float(input("Set a population size: "))
+maxGenerations = 100 if setup == "y" else int(input("Set the maximum number of generations: "))
 
 # Definition of the functions
 # Each element in the list represents a function and contains the following elements:
 # 1. The mathematical expression of the function.
-# 2. The starting point for the variables x1 and x2, represented as a NumPy array.
+# 2. The constraints for the variables.
 # 3. A string with the name of the function.
 # 4. The known or expected optimal solution, represented as a NumPy array.
 functions = [
@@ -35,7 +34,7 @@ functions = [
 ]
 
 # Definition of the solution methods
-GAs = [
+geneticAlgorithms = [
     (
         BinaryGA,
         "GA - Binary Encoding"
@@ -51,12 +50,18 @@ solutions = []
 
 # Evaluate the functions
 # For each problem, test all the solution methods
-for function, startPoint, _, _ in functions:
-    for method, w in methods:
-        # The resulting solution (a list of points) is appended to the solutions list.
-        solutions.append(method(stepSize, startPoint.copy(), function, tolerance, maxIterations, (x1, x2)))
+for function, _, _, _ in functions:
+    for GenAlg, _ in geneticAlgorithms:
 
-# Export the results to a txt file
+        genAlg = GenAlg()
+        genAlg.initialize_population()
+
+        # HERE GOES THE SOLVING PROCESS
+
+        # The resulting solution (a list of points) is appended to the solutions list.
+        solutions.append(None)
+
+# Export the results to a csv file
 with open("report.txt", "w") as report:
     for i in range(len(functions)):
         report.write(f"⦿ {functions[i][2]}\n")
