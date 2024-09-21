@@ -24,6 +24,7 @@ functions = [
     )
 ]
 
+"""
 # Create an empty array to store the results of the implementation of the methods
 solutions = []
 
@@ -85,5 +86,6 @@ if __name__ == "__main__":
     setup = input("\nGo with default values? [y/n] ")
     populationSize = 4 if setup == "y" else float(input("Set a population size: "))
     maxGenerations = 100 if setup == "y" else int(input("Set the maximum number of generations: "))
+"""
 
 
