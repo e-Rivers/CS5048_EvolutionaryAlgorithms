@@ -3,15 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-# Ask for input variables
-print("Would you like to setup the parameters manually or go with the default values?")
-# WE CAN CHANGE THIS DEFAULT VALUES LATER
-print("Default population size: 4") 
-print("Default number of generations: 100")
-setup = input("\nGo with default values? [y/n] ")
-populationSize = 4 if setup == "y" else float(input("Set a population size: "))
-maxGenerations = 100 if setup == "y" else int(input("Set the maximum number of generations: "))
-
 # Definition of the functions
 # Each element in the list represents a function and contains the following elements:
 # 1. The mathematical expression of the function.
@@ -30,18 +21,6 @@ functions = [
         np.array([-5.12, 5.12]).astype(float),
         lambda n: f"Rastrigin (n={n})",
         np.array([0, 0]).astype(float)
-    )
-]
-
-# Definition of the solution methods
-geneticAlgorithms = [
-    (
-        BinaryGA,
-        "GA - Binary Encoding"
-    ),
-    (
-        RealGA,
-        "GA - Real Number Encoding"
     )
 ]
 
@@ -95,5 +74,16 @@ for i in range(len(functions)):
 fig.tight_layout()
 plt.show()
 
+
+if __name__ == "__main__":
+    # Ask for input variables
+    print("")
+    print("Would you like to setup the parameters manually or go with the default values?")
+    # WE CAN CHANGE THIS DEFAULT VALUES LATER
+    print("Default population size: 4") 
+    print("Default number of generations: 100")
+    setup = input("\nGo with default values? [y/n] ")
+    populationSize = 4 if setup == "y" else float(input("Set a population size: "))
+    maxGenerations = 100 if setup == "y" else int(input("Set the maximum number of generations: "))
 
 

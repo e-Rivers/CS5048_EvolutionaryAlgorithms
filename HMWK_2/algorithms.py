@@ -1,8 +1,9 @@
 import numpy as np
 import random
+from abc import ABC, abstractmethod
 
 # Father class: GeneticAlgorithm
-class GeneticAlgorithm:
+class GeneticAlgorithm(ABC):
 
     def __init__(self, popu_size, num_generations, ind_size, Pc=0.9, Pm=0.1):
         self.pop_size = popu_size
@@ -12,19 +13,22 @@ class GeneticAlgorithm:
         self.Pc = Pc  
         self.Pm = Pm  
 
-        
-
     def initialize_population(self):
         raise NotImplementedError
-
+    
+    @abstractmethod
     def crossover(self, parent1, parent2):
         raise NotImplementedError
 
+    @abstractmethod
     def mutation(self, individual):
         raise NotImplementedError
     
+    @abstractmethod
     def selection(self):
         raise NotImplementedError
+
+
     
 
 
@@ -50,6 +54,8 @@ class BinaryGA(GeneticAlgorithm):
         
         return individual
 
+    def __str__(self):
+        return "Binary Encoding"
 
 # Child class for Real Encoding
 class RealGA(GeneticAlgorithm):
@@ -67,6 +73,8 @@ class RealGA(GeneticAlgorithm):
         # Parameter-based mutation
         return 
 
+    def __str__(self):
+        return "Real Encoding"
 
 
 if __name__ == "__main__":
