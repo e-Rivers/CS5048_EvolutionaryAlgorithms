@@ -5,13 +5,15 @@ from abc import ABC, abstractmethod
 # Father class: GeneticAlgorithm
 class GeneticAlgorithm(ABC):
 
-    def __init__(self, popu_size, num_generations, ind_size, Pc=0.9, Pm=0.1):
-        self._pop_size = popu_size
-        self._num_generations = num_generations
-        self._ind_size = ind_size
-        self._population = self.initialize_population()
-        self._Pc = Pc   # Crossover Probability  
-        self._Pm = Pm   # Mutation Probability  
+    #    def __init__(self, popu_size, num_generations, ind_size, Pc=0.9, Pm=0.1):
+    def __init__(self):
+        pass
+        #        self._pop_size = popu_size
+        #        self._num_generations = num_generations
+        #        self._ind_size = ind_size
+        #        self._population = self.initialize_population()
+        #        self._Pc = Pc   # Crossover Probability  
+        #        self._Pm = Pm   # Mutation Probability  
 
     def initialize_population(self):
         raise NotImplementedError
@@ -76,28 +78,30 @@ class RealGA(GeneticAlgorithm):
     # Binary tournament selection
     def _selection(self):
         
-        return "Hello"
+        return None
 
     # Simulated Binary Crossover (SBX)
-    def _crossover(self, parent1, parent2):
+    def _crossover(self, parent1, parent2, uTest = None):
         # Step 1. Compute a random number u between 0 and 1
-        u = np.random.uniform()
+        u = np.random.uniform() if uTest == None else uTest
 
         # Step 2. Compute beta
         if u <= 0.5:
-            beta = (2*u)*(1/(self._nc+1))
+            beta = (2*u)**(1 / (self._nc + 1))
         else:
-            beta = (1/(2*(1-u)))**(1/(self._nc+1))
+            beta = (1 / (2*(1 - u)))**(1 / (self._nc + 1))
+
+        print(beta)
 
         # Step 3. Produce children
-        
+        H1 = 0.5 * ((leftSide := (parent1 + parent2)) - (rightSide := beta*np.abs(parent2 - parent1)))
+        H2 = 0.5 * (leftSide + rightSide)
 
-
-        return
+        return H1, H2
 
     # Parameter-based mutation
     def _mutation(self, individual):
-        return "Hello"
+        return None
 
     def __str__(self):
         return "Real Encoding"
