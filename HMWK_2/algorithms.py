@@ -7,9 +7,10 @@ from abc import ABC, abstractmethod
 class GeneticAlgorithm(ABC):
 
     #    def __init__(self, popu_size, num_generations, ind_size, Pc=0.9, Pm=0.1):
-    def __init__(self, lowerBound, upperBound, Pc=0.9, Pm=0.1):
+    def __init__(self, lowerBound, upperBound, func, Pc=0.9, Pm=0.1):
         self._xU = upperBound
         self._xL = lowerBound
+        self._func = func
         self._population = None
         #        self._pop_size = popu_size
         #        self._num_generations = num_generations
@@ -23,6 +24,9 @@ class GeneticAlgorithm(ABC):
 
     def run(self, verbose=False):
         pass
+
+    def _getFitness(self, individual):
+        return self._func(individual)
 
     @abstractmethod
     def _crossover(self, parent1, parent2):
@@ -57,6 +61,7 @@ class BinaryGA(GeneticAlgorithm):
         ----------
 
         Output:
+            if
         num_bits: Represents the length of the solution
         """
         # we calculate the length of the chromosomes needed to encode the solution using 4 numbers after the decimal point
@@ -317,21 +322,25 @@ class BinaryGA(GeneticAlgorithm):
 
 class RealGA(GeneticAlgorithm):
 
-    def __init__(self, lowerBound, upperBound, nc = 20, nm = 20):
-        super().__init__(lowerBound, upperBound)
+    def __init__(self, lowerBound, upperBound, func, nc = 20, np = 20):
+        super().__init__(lowerBound, upperBound, func)
         self._nc = nc
-        self._nm = nm
+        self._np = np
 
-    def initialize_population(self):
-        return
-    
     # Binary tournament selection
     def _selection(self, population):
         # Step 1. Shuffle individuals
+        shuffledPop = np.random.shuffle(self._population.copy())
 
-            
-        
-        return None
+        # Step 2. Get two random individuals
+        candidate1 = np.random.choice(shuffledPop)
+        candidate2 = np.random.choice(shuffledPop)
+
+        # Step 3. Make them compete based on their fitness
+        fitnessCand1 = self._getFitness(candidate1)
+        fitnessCand2 = self._getFitness(candidate2)
+
+        return candidate1 if fitnessCand1 < fitnessCand2 else candidate2
 
     # Simulated Binary Crossover (SBX)
     def _crossover(self, parent1, parent2, uTest = None):
