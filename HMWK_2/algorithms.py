@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import sympy
 from abc import ABC, abstractmethod
 
 # Father class: GeneticAlgorithm
@@ -53,6 +54,8 @@ class BinaryGA(GeneticAlgorithm):
         x_min: Minimum value that the solution can take
         x_max: Maximum value that the solution can take
 
+        ----------
+
         Output:
         num_bits: Represents the length of the solution
         """
@@ -70,6 +73,8 @@ class BinaryGA(GeneticAlgorithm):
         num_bits_1: number of bits needed to encode x1
         num_bits_2: number of bits to encode x2
         popu_size: number of individuals (genomes or chromosomes)
+
+        ----------
 
         output:
         population: list of randomly generated solutions
@@ -110,6 +115,8 @@ class BinaryGA(GeneticAlgorithm):
         num_bits_1 : Number of bits needed to encode x1
         num_bits_2 : Number of bits needed to encode x2
 
+        ----------
+
         Output:
         decode_population: list of the real values for each individual (chromosome = [x1, x2])
 
@@ -141,7 +148,30 @@ class BinaryGA(GeneticAlgorithm):
         return decode_population
 
 
-    
+    def function_evaluation(decode_population, func):
+        """
+        function to evaluate the population into the objective function
+
+        input:
+        decode population: list of the real values for each individual (chromosome = [x1, x2])
+        fun: objective function
+
+        ----------
+
+        output:
+        fit_list: list of the fitness of each individual
+        """
+
+        fit_list = []
+        x1, x2 = variables
+        for i in range(len(decode_population)):
+            x1 = decode_population[i][0]
+            x2 = decode_population[i][1]
+            current_value = func.subs({x1: x[0], x2: x[1]}).evalf()
+            current_value = round(current_value, 4)
+            fit_list.append(current_value)
+
+        return fit_list
 
     #Roulette wheel
     def selection(self, fit_list, population): 
@@ -151,6 +181,8 @@ class BinaryGA(GeneticAlgorithm):
         input:
         fit_list : list of the fitness of each individual of the population
         probabilities: the individuals (or chromosomes)
+
+        ----------
 
         output:
         selected_individuals: list of selected chromosomes
@@ -198,29 +230,48 @@ class BinaryGA(GeneticAlgorithm):
 
         return selected_individuals
 
-    def crossover(self, parents):
+    def crossover(self, population, pc=0.7):
         """
         Function to perfomr single point crossover
 
         input:
         parents: list of selected chromosomes
+        pc : probability of crossover (0.7 as default)
 
         output:
         childrens: list of new chromosomes after the crossover
         """
 
-        # select the position 
+        
+
+        #empty lists for selected individual to crossover and childrens
+        individuals_cross = []
+        index_cross = []
         children =[]
-        position_cross = random.randint(1, len(parents[0])-1)
+
+        #select individuals random to perform the crossover
+        for i in range(len(parents)):
+            r = random.random()
+            if r < pc:
+                individuals_cross.append(parents(i))
+                index_cross.append(i)
+
 
         # Make the crossover
-        if len(parents) > 1:
-            parent1 = parents[0]
-            parent2 = parents[1]
-            chromosome1 = parent1[:position_cross] + parent2[position_cross:]
-            chromosome2 = parent2[:position_cross] + parent1[position_cross:]
-        children.append(chromosome1)
-        children.append(chromosome2)
+        if len(individuals_cross) > 1:
+            for i in range(0, len(individuals_cross)-1,2):
+                parent1 = parents[i]
+                parent2 = parents[i+1]
+
+                # select the position for crossover
+                position_cross = random.randint(1, len(parents[0])-1)
+
+                #perform single point crossover
+                chromosome1 = parent1[:position_cross] + parent2[position_cross:]
+                chromosome2 = parent2[:position_cross] + parent1[position_cross:]  
+            
+                children.append(chromosome1)
+                children.append(chromosome2)
 
         return children
 
