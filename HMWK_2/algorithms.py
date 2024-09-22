@@ -68,8 +68,8 @@ class BinaryGA(GeneticAlgorithm):
 # Child class for Real Encoding
 class RealGA(GeneticAlgorithm):
 
-    def __init__(self, nc = 20, nm = 20):
-        super().__init__()
+    def __init__(self, lowerBound, upperBound, nc = 20, nm = 20):
+        super().__init__(lowerBound, upperBound)
         self._nc = nc
         self._nm = nm
 
@@ -111,7 +111,7 @@ class RealGA(GeneticAlgorithm):
             # Step 2.1. Compute eta sub m
         eta = 100 + t
             # Step 2.2. Compute delta
-        delta = min((gene - self.xL), (self.xU - gene)) / (self._xU - self._xL)
+        delta = min((gene - self._xL), (self._xU - gene)) / (self._xU - self._xL)
             # Step 2.3. Now compute delta sub q
         if u <= 0.5:
             delta_q = (2*u + (1-2*u)*(1-delta)**(eta+1))**(1 / (eta+1)) - 1
