@@ -166,10 +166,31 @@ class BinaryGA(GeneticAlgorithm):
 
         return selected_individuals
 
-    def crossover(self, parent1, parent2):
-        # Single-point crossover
-       
-        return
+    def crossover(self, parents):
+        """
+        Function to perfomr single point crossover
+
+        input:
+        parents: list of selected chromosomes
+
+        output:
+        childrens: list of new chromosomes after the crossover
+        """
+
+        # select the position 
+        children =[]
+        position_cross = random.randint(1, len(parents[0])-1)
+
+        # Make the crossover
+        if len(parents) > 1:
+            parent1 = parents[0]
+            parent2 = parents[1]
+            chromosome1 = parent1[:position_cross] + parent2[position_cross:]
+            chromosome2 = parent2[:position_cross] + parent1[position_cross:]
+        children.append(chromosome1)
+        children.append(chromosome2)
+
+        return children
 
       
     
