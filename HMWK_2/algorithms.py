@@ -194,8 +194,28 @@ class BinaryGA(GeneticAlgorithm):
 
       
     
-    def mutation(self, individual):
-        # Binary mutation 
+    def mutation(self, population, pm):
+        """
+        function to mutate genes randomly
+
+        input:
+        population: list of chromosomes
+        pm: probability of mutation
+
+        output:
+        population: list of individuals after mutation
+        """ 
+
+        # Calculate the total number of genes across the entire population.
+        number_genes = len(population[0]) * len(population)
+
+        #List to keep track of the genes that are going to be mutated
+        gen_index = []
+
+        for i in range(1,number_genes):
+            # generate
+
+
         
         return individual
 
