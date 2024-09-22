@@ -97,7 +97,7 @@ class BinaryGA(GeneticAlgorithm):
     def function_evaluation(self):
         return
 
-    def probability_percen():
+    def probability_percen(fit_list):
         """
         To calculate the probability for each individual
 
@@ -105,9 +105,37 @@ class BinaryGA(GeneticAlgorithm):
         fit_list : list of the fitness of each individual of the population
 
         output:
+        cum_list: list of the cumulative probability of selecting each individual
         
         """
+        #Initialize the total fitness (f) and cumulative probability (q) to 0
+        f=0
+        q=0
+
+        # Lists to store cumulative probabilities a probabilities of selection
+        cumu_probability = []
+        probability = []
+
+        #Step 2 calculate the total fitness (f)
+        for i in fit_list:
+            f += i
+        
+        # Step 3 calculate the probability for each element
+        for i in fit_list:
+            new_prob = i/f
+            probability.append(new_prob)
+        
+        #Step 4 calculate the cumulative probability
+        for i in range(fit_list):
+            if i == 0:
+                new_cum_probability = probability[0]
+            else :
+                for j in
+
+
+
         return
+
     #Roulette wheel
     def selection(self): 
         
