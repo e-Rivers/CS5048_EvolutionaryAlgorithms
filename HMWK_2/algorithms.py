@@ -207,21 +207,25 @@ class BinaryGA(GeneticAlgorithm):
         population: list of individuals after mutation
         """ 
 
-        # Calculate the total number of genes across the entire population.
-        number_genes = len(population[0]) * len(population)
+        # In each chromosome we will mutate  one gene
+        for i in range(len(population)):
+            chromosome = population[i]
+            gene_number = random.randint(0, len(chromosome))
+            gene = chromosome[gene_number]
 
-        #List to keep track of the genes that are going to be mutated
-        gen_index = []
-
-        for i in range(1,number_genes):
-            # generate
-
+            if gene == '0':
+                gene = '1'
+            else:
+                gene = '0'
+            chromosome_mutated = chromosome[:gene_number] + gene + chromosome[gene_number:]
+            population[i] = chromosome_mutated
 
         
-        return individual
+        return population
 
     def __str__(self):
         return "Binary Encoding"
+
 
 #############################################################
 # Child class for Real Encoding
