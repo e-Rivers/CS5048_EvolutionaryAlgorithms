@@ -1,7 +1,11 @@
 import numpy as np
 import random
 import sympy
+from sympy import symbols
+import math
 from abc import ABC, abstractmethod
+import matplotlib.pyplot as plt
+
 
 # Father class: GeneticAlgorithm
 class GeneticAlgorithm(ABC):
@@ -19,9 +23,11 @@ class GeneticAlgorithm(ABC):
         #        self._Pc = Pc   # Crossover Probability  
         #        self._Pm = Pm   # Mutation Probability  
 
+    @abstractmethod
     def initialize_population(self):
         raise NotImplementedError
 
+    @abstractmethod
     def run(self, verbose=False):
         pass
 
@@ -50,7 +56,55 @@ class GeneticAlgorithm(ABC):
 
 class BinaryGA(GeneticAlgorithm):
 
-    def number_bits(x_min, x_max):
+    def __init__(self, lowerBound, upperBound, func, Pm=0.7):
+        super().__init__(lowerBound, upperBound, func, Pm)
+        
+
+    def run(self, popu_size, num_generations, x1_min, x1_max, x2_min, x2_max):
+        # Initialize population
+        num_bits_1 = self.number_bits(x1_min, x1_max)
+        num_bits_2 = self.number_bits(x2_min, x2_max)
+        first_population = self.initialize_population(num_bits_1, num_bits_2, popu_size)
+        population = list(first_population)
+        best_solutions =[]
+
+
+        for generation in range(num_generations):
+            # Decode population
+            decoded_population = self.decoder(population, x1_min, x2_min, x1_max, x2_max, num_bits_1, num_bits_2)
+            #print(decoded_population)
+        
+            
+            fit_list = self.function_evaluation(decoded_population, self._func)
+
+            # Selection
+            selected_individuals = self._selection(fit_list, population)
+
+            # Crossover
+            children = self._crossover(selected_individuals)
+
+            # Mutation
+            mutated_population = self._mutation(children, 0.7)
+
+            # Update population
+            population = mutated_population
+
+            # print best fitness in the generation
+            min_index = fit_list.index(min(fit_list))
+
+            # Store the best fitness and its corresponding decoded point
+            #best_fitness = (fit_list[min_index], decoded_population[min_index])
+            best_fitness = fit_list[min_index]
+            best_solutions.append(best_fitness)
+
+            #print(best_fitness, decoded_population )
+            
+            
+
+        # Return best solution
+        return best_solutions
+
+    def number_bits(self, x_min, x_max):
         """
         Determine the number of bits needed to encode the solution
 
@@ -68,7 +122,7 @@ class BinaryGA(GeneticAlgorithm):
         num_bits = (x_max - x_min)*10**4
         num_bits = math.log(num_bits,2)
         num_bits = math.floor(num_bits + 0.99)
-        return number_bits
+        return num_bits
 
     def initialize_population(self, num_bits_1, num_bits_2, popu_size):
         """
@@ -99,10 +153,11 @@ class BinaryGA(GeneticAlgorithm):
                 gene = random.randint(0,1)
                 gene = str(gene)
                 genome2 += gene
-        chromosome = genome1 + genome2
-        population.append(chromosome)
-        genome1 = ""
-        genome2 = ""
+            chromosome = genome1 + genome2
+            population.append(chromosome)
+            genome1 = ""
+            genome2 = ""
+
         return population
 
     
@@ -144,7 +199,7 @@ class BinaryGA(GeneticAlgorithm):
 
             #scale the decimal integer to its original range
             x1 = x1_min + x1_deci * ((x1_max - x1_min)/ (2**num_bits_1 - 1))
-            x2 = x2_min + x2_deci * ((x2_max - x2_min)/ (2**num_bits_1 - 1))
+            x2 = x2_min + x2_deci * ((x2_max - x2_min) / (2**num_bits_2 - 1))
             x2=round(x2,4)
             x1=round(x1,4)
             decode_population.append([x1,x2])
@@ -153,7 +208,7 @@ class BinaryGA(GeneticAlgorithm):
         return decode_population
 
 
-    def function_evaluation(decode_population, func):
+    def function_evaluation(self, decode_population, func):
         """
         function to evaluate the population into the objective function
 
@@ -168,18 +223,16 @@ class BinaryGA(GeneticAlgorithm):
         """
 
         fit_list = []
-        x1, x2 = variables
+        #x1, x2 = variables
         for i in range(len(decode_population)):
-            x1 = decode_population[i][0]
-            x2 = decode_population[i][1]
-            current_value = func.subs({x1: x[0], x2: x[1]}).evalf()
-            current_value = round(current_value, 4)
+            current_value = func.subs({x1: decode_population[i][0], x2: decode_population[i][1]}).evalf()
             fit_list.append(current_value)
+            
 
         return fit_list
 
     #Roulette wheel
-    def selection(self, fit_list, population): 
+    def _selection(self, fit_list, population): 
         """
         To select individuals using the roulette wheel method
 
@@ -235,7 +288,7 @@ class BinaryGA(GeneticAlgorithm):
 
         return selected_individuals
 
-    def crossover(self, population, pc=0.7):
+    def _crossover(self, parents, pc=0.7):
         """
         Function to perfomr single point crossover
 
@@ -244,7 +297,7 @@ class BinaryGA(GeneticAlgorithm):
         pc : probability of crossover (0.7 as default)
 
         output:
-        childrens: list of new chromosomes after the crossover
+        parents: list of new  population including chromosomes after the crossover
         """
 
         
@@ -258,7 +311,7 @@ class BinaryGA(GeneticAlgorithm):
         for i in range(len(parents)):
             r = random.random()
             if r < pc:
-                individuals_cross.append(parents(i))
+                individuals_cross.append(parents[i])
                 index_cross.append(i)
 
 
@@ -278,11 +331,18 @@ class BinaryGA(GeneticAlgorithm):
                 children.append(chromosome1)
                 children.append(chromosome2)
 
-        return children
+            cont = 0
+            
+            for i in range(len(children)):
+                parents[index_cross[i]]=children[cont]
+                cont +=1
+
+
+        return parents
 
       
     
-    def mutation(self, population, pm):
+    def _mutation(self, population, pm):
         """
         function to mutate genes randomly
 
@@ -297,14 +357,14 @@ class BinaryGA(GeneticAlgorithm):
         # In each chromosome we will mutate  one gene
         for i in range(len(population)):
             chromosome = population[i]
-            gene_number = random.randint(0, len(chromosome))
+            gene_number = random.randint(0, len(chromosome)-1)
             gene = chromosome[gene_number]
 
             if gene == '0':
                 gene = '1'
             else:
                 gene = '0'
-            chromosome_mutated = chromosome[:gene_number] + gene + chromosome[gene_number:]
+            chromosome_mutated = chromosome[:gene_number] + gene + chromosome[(gene_number+1):]
             population[i] = chromosome_mutated
 
         
@@ -388,5 +448,61 @@ class RealGA(GeneticAlgorithm):
 
 
 if __name__ == "__main__":
-    ##
-    print("esto aún no se ha terminado")
+    # Define Rastrigin function
+    def rastrigin(x):
+        A = 10
+        return A * len(x) + sum([(xi**2 - A * np.cos(2 * np.pi * xi)) for xi in x])
+
+    def run_experiments(ga_class, problems, pop_size, num_generations, num_runs):
+        results = []
+        for problem in problems:
+            for _ in range(num_runs):
+                ga = ga_class(lowerBound=problem[1][0], upperBound=problem[1][1], func=problem[0])
+                best_fitness = ga.run(popu_size=pop_size, num_generations=num_generations, 
+                                                                        x1_min=problem[1][0], x1_max=problem[1][1], 
+                                                                        x2_min=problem[1][0], x2_max=problem[1][1])
+                best_index = np.argmin(best_fitness)
+                print(best_fitness)
+                fitness = list(best_fitness)
+                results.append(fitness[best_index])
+        return results
+
+    # Initialize problems
+    x1, x2 = symbols("x1 x2")
+    problems = [
+        (
+            100*(x1**2 - x2)**2 + (1 - x1)**2,
+            np.array([-2.048, 2.048]).astype(float),
+            "Function A",
+            np.array([0, 0]).astype(float) 
+        ),
+
+        (
+            (4-2.1*x1**2+((x1**4)/3))*x1**2+x1*x2+(-4+4*x2**2)*x2**2,
+            np.array([0.5, 1]).astype(float),
+            "Function B",
+            np.array([0.08984201774712433, 0.7126563947865581]).astype(float)
+        ),
+    ]
+
+    num_runs = 20
+    results = {}
+    for ga_class in [BinaryGA]:
+        results[ga_class.__name__] = {}
+        for problem in problems:
+            fitnesses = run_experiments(ga_class, [problem], pop_size=4, num_generations=10, num_runs=num_runs)
+            results[ga_class.__name__][problem[2]] = {
+                'mean': np.mean(fitnesses),
+                #'std': np.std(fitnesses),
+                'min': np.min(fitnesses),
+                'max': np.max(fitnesses),
+            }
+
+    # Print results
+    for ga_name, res in results.items():
+        print(f"{ga_name}:")
+        for prob_name, stats in res.items():
+            print(f"  {prob_name}: Mean: {stats['mean']}, Min: {stats['min']}, Max: {stats['max']}")
+
+
+    # You would call plot_convergence after running your experiments
