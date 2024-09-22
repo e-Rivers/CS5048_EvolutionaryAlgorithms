@@ -30,6 +30,7 @@ class GeneticAlgorithm:
 
 # Child class for Binary Encoding
 class BinaryGA(GeneticAlgorithm):
+
     def number_bits(x_min, x_max):
         """
         Determine the number of bits needed to encode the solution
@@ -71,22 +72,45 @@ class BinaryGA(GeneticAlgorithm):
                 gen = random.randint(0,1)
                 gen = str(gen)
                 genome2 += gen
-        return 
+        chromosome = genome1 + genome2
+        population.append(chromosome)
+        genome1 = ""
+        genome2 = ""
+        return population
 
     
+    def decoder(self):
+
+        return
+
+    def function_evaluation(self):
+        return
+
+    def probability_percen():
+        """
+        To calculate the probability for each individual
+
+        input:
+        fit_list : list of the fitness of each individual of the population
+
+        output:
+        
+        """
+        return
+    #Roulette wheel
+    def selection(self): 
+        
+        return
 
     def crossover(self, parent1, parent2):
         # Single-point crossover
        
         return
 
-    #Roulette wheel
-    def selection(self): 
-        
-        return  
+      
     
     def mutation(self, individual):
-        # Binary mutation (flip bits)
+        # Binary mutation 
         
         return individual
 
