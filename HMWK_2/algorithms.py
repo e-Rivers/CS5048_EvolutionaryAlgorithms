@@ -92,6 +92,8 @@ class BinaryGA(GeneticAlgorithm):
     
     def decoder(self):
 
+        # aaaaaaa
+
         return
 
     def function_evaluation(self):
@@ -118,28 +120,51 @@ class BinaryGA(GeneticAlgorithm):
 
         #Step 2 calculate the total fitness (f)
         for i in fit_list:
-            f += i
+            f += (i-min(fit_list))
         
         # Step 3 calculate the probability for each element
+        #In case that f is equal to zero all the individuals will have the same probability
         for i in fit_list:
-            new_prob = i/f
+            if f == 0:
+                new_prob = (i-min(fit_list))/len(fit_list)
+            else:
+                new_prob = (i-min(fit_list))/f
             probability.append(new_prob)
         
         #Step 4 calculate the cumulative probability
-        for i in range(fit_list):
-            if i == 0:
-                new_cum_probability = probability[0]
-            else :
-                for j in
+        for i in probability:
+            q += i  
+            cumu_probability.append(q)  
 
-
-
-        return
+        return cumu_probability
 
     #Roulette wheel
-    def selection(self): 
-        
-        return
+    def selection(self, cumu_probability, population): 
+        """
+        To select individuals using the roulette wheel method
+
+        input:
+        cumu_probability: list of the cummulative probabilitties of each individual
+        probabilities: the individuals (or chromosomes)
+
+        output:
+        selected_individuals: list of selected chromosomes
+        """
+        # step 5 get a pseudo-random number between 0 and 1
+        # then
+
+        selected_individuals =[]
+        for i in range(len(population)):
+            r = random.random()
+
+            # Find the first individual whose cumulative probability is greater than or equal to r
+            for k in range(len(population)):
+                if r <= cumu_probability[k]:
+                    selected_individuals.append(population[k])
+                    break   
+
+
+        return selected_individuals
 
     def crossover(self, parent1, parent2):
         # Single-point crossover
