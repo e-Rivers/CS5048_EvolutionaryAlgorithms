@@ -39,8 +39,10 @@ class GeneticAlgorithm(ABC):
     
 
 
-#############################################################
-# Child class for Binary Encoding
+#####################################################################
+################## Child class for Binary Encoding ##################
+#####################################################################
+
 class BinaryGA(GeneticAlgorithm):
 
     def number_bits(x_min, x_max):
@@ -54,7 +56,8 @@ class BinaryGA(GeneticAlgorithm):
         Output:
         num_bits: Represents the length of the solution
         """
-        num_bits = (x_max - x_min)*10**3
+        # we calculate the length of the chromosomes needed to encode the solution using 4 numbers after the decimal point
+        num_bits = (x_max - x_min)*10**4
         num_bits = math.log(num_bits,2)
         num_bits = math.floor(num_bits + 0.99)
         return number_bits
@@ -72,18 +75,20 @@ class BinaryGA(GeneticAlgorithm):
         population: list of randomly generated solutions
         """
 
+        # Strings to store the binary encoding for each variable (x1 and x2)
         genome1 = ""
         genome2 = ""
         population = []
+        # We will do the same procedure for each individual on the population
         for i in range(popu_size):
             for j in range(num_bits_1):
-                gen = random.randint(0,1)
-                gen = str(gen)
-                genome1 += gen
+                gene = random.randint(0,1)
+                gene = str(gene)
+                genome1 += gene
             for k in range(num_bits_2):
-                gen = random.randint(0,1)
-                gen = str(gen)
-                genome2 += gen
+                gene = random.randint(0,1)
+                gene = str(gene)
+                genome2 += gene
         chromosome = genome1 + genome2
         population.append(chromosome)
         genome1 = ""
@@ -91,25 +96,64 @@ class BinaryGA(GeneticAlgorithm):
         return population
 
     
-    def decoder(self):
+    def decoder(self, population, x1_min, x2_min, x1_max, x2_max, num_bits_1, num_bits_2):
 
-        # aaaaaaa
-
-        return
-
-    def function_evaluation(self):
-        return
-
-    def probability_percen(fit_list):
         """
-        To calculate the probability for each individual
+        Function to decode from binary numbers to real ones
+
+        Input:
+        population 
+        x1_min : Minimum possible value for x1
+        x2_min : Minimum possible value for x2
+        x1_max : Maximum possible value for x1
+        x2_max : Maximum possible value for x1
+        num_bits_1 : Number of bits needed to encode x1
+        num_bits_2 : Number of bits needed to encode x2
+
+        Output:
+        decode_population: list of the real values for each individual (chromosome = [x1, x2])
+
+
+        """
+
+        # Empty list to store the decoded population
+        decode_population = []
+
+        # for each chromosome
+        for i in range(len(population)):
+            full_chromosome = population[i]
+            #extract the genome for x1 and x2
+            genome_x1 = full_chromosome[:num_bits_1]
+            genome_x2 = full_chromosome[num_bits_1:]
+
+            #convert the binary string for each variable to a decimal integer
+            x1_deci = int(genome_x1, 2)
+            x2_deci = int(genome_x2, 2)
+
+            #scale the decimal integer to its original range
+            x1 = x1_min + x1_deci * ((x1_max - x1_min)/ (2**num_bits_1 - 1))
+            x2 = x2_min + x2_deci * ((x2_max - x2_min)/ (2**num_bits_1 - 1))
+            x2=round(x2,4)
+            x1=round(x1,4)
+            decode_population.append([x1,x2])
+
+
+        return decode_population
+
+
+    
+
+    #Roulette wheel
+    def selection(self, fit_list, population): 
+        """
+        To select individuals using the roulette wheel method
 
         input:
         fit_list : list of the fitness of each individual of the population
+        probabilities: the individuals (or chromosomes)
 
         output:
-        cum_list: list of the cumulative probability of selecting each individual
-        
+        selected_individuals: list of selected chromosomes
         """
         #Initialize the total fitness (f) and cumulative probability (q) to 0
         f=0
@@ -135,22 +179,9 @@ class BinaryGA(GeneticAlgorithm):
         #Step 4 calculate the cumulative probability
         for i in probability:
             q += i  
-            cumu_probability.append(q)  
+            cumu_probability.append(q)
 
-        return cumu_probability
-
-    #Roulette wheel
-    def selection(self, cumu_probability, population): 
-        """
-        To select individuals using the roulette wheel method
-
-        input:
-        cumu_probability: list of the cummulative probabilitties of each individual
-        probabilities: the individuals (or chromosomes)
-
-        output:
-        selected_individuals: list of selected chromosomes
-        """
+        
         # step 5 get a pseudo-random number between 0 and 1
         # then
 
@@ -227,8 +258,12 @@ class BinaryGA(GeneticAlgorithm):
         return "Binary Encoding"
 
 
+
+
 #############################################################
-# Child class for Real Encoding
+############# Child class for Real Encoding #################
+#############################################################
+
 class RealGA(GeneticAlgorithm):
 
     def __init__(self, lowerBound, upperBound, nc = 20, nm = 20):
