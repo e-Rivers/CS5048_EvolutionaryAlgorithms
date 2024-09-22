@@ -9,6 +9,7 @@ class GeneticAlgorithm(ABC):
     def __init__(self, lowerBound, upperBound, Pc=0.9, Pm=0.1):
         self._xU = upperBound
         self._xL = lowerBound
+        self._population = None
         #        self._pop_size = popu_size
         #        self._num_generations = num_generations
         #        self._ind_size = ind_size
@@ -19,9 +20,9 @@ class GeneticAlgorithm(ABC):
     def initialize_population(self):
         raise NotImplementedError
 
-    def run(self):
-        raise NotImplementedError
-    
+    def run(self, verbose=False):
+        pass
+
     @abstractmethod
     def _crossover(self, parent1, parent2):
         raise NotImplementedError
@@ -215,7 +216,10 @@ class RealGA(GeneticAlgorithm):
         return
     
     # Binary tournament selection
-    def _selection(self):
+    def _selection(self, population):
+        # Step 1. Shuffle individuals
+
+            
         
         return None
 
@@ -224,14 +228,14 @@ class RealGA(GeneticAlgorithm):
         # Step 1. Compute a random number u between 0 and 1
         u = np.random.uniform() if uTest == None else uTest
 
-        # Step 2. Compute beta
+        # Step 2. Compute beta_m
         if u <= 0.5:
-            beta = (2*u)**(1 / (self._nc + 1))
+            beta_m = (2*u)**(1 / (self._nc + 1))
         else:
-            beta = (1 / (2*(1 - u)))**(1 / (self._nc + 1))
+            beta_m = (1 / (2*(1 - u)))**(1 / (self._nc + 1))
 
         # Step 3. Produce children
-        H1 = 0.5 * ((leftSide := (parent1 + parent2)) - (rightSide := beta*np.abs(parent2 - parent1)))
+        H1 = 0.5 * ((leftSide := (parent1 + parent2)) - (rightSide := beta_m*np.abs(parent2 - parent1)))
         H2 = 0.5 * (leftSide + rightSide)
 
         return H1, H2
@@ -246,22 +250,16 @@ class RealGA(GeneticAlgorithm):
         u = np.random.uniform() if uTest == None else uTest
 
         # Step 2. Compute delta sub q
-            # Step 2.1. Compute eta sub m
-        eta = 100 + t
-            # Step 2.2. Compute delta
+        eta_m = 100 + t
         delta = min((gene - self._xL), (self._xU - gene)) / (self._xU - self._xL)
-            # Step 2.3. Now compute delta sub q
         if u <= 0.5:
-            delta_q = (2*u + (1-2*u)*(1-delta)**(eta+1))**(1 / (eta+1)) - 1
+            delta_q = (2*u + (1-2*u)*(1-delta)**(eta_m+1))**(1 / (eta_m+1)) - 1
         else:
-            delta_q = 1 - (2*(1-u) + 2*(u-0.5)*(1-delta)**(eta+1))**(1 / (eta+1))
+            delta_q = 1 - (2*(1-u) + 2*(u-0.5)*(1-delta)**(eta_m+1))**(1 / (eta_m+1))
 
         # Step 3. Perform the mutation 
-            # Step 3.1. Compute delta max
         deltaMax = self._xU - self._xL
-            # Step 3.2. Mutate the gene
         mutatedGene = gene + delta_q*deltaMax
-            # Step 3.3. Replace the old gene with the mutated one
         individual[i] = mutatedGene
 
         return individual 

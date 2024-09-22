@@ -1,5 +1,6 @@
 from algorithms import *
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 
 
@@ -9,7 +10,7 @@ import matplotlib.pyplot as plt
 # 2. The constraints for the variables.
 # 3. A string with the name of the function.
 # 4. The known or expected optimal solution, represented as a NumPy array.
-functions = [
+problems = [
     (
         lambda x: 100*(x[0]**2 - x[1])**2 + (1 - x[0])**2,
         np.array([-2.048, 2.048]).astype(float),
@@ -17,7 +18,7 @@ functions = [
         np.array([0, 0]).astype(float) 
     ),
     (
-        lambda x: 10 * 2 + sum([(x_i**2 - 10 * np.cos(2*np.pi*x_i)) for x_i in x]),
+        lambda x: 10*len(x) + sum([(x_i**2 - 10*np.cos(2*np.pi*x_i)) for x_i in x]),
         np.array([-5.12, 5.12]).astype(float),
         lambda n: f"Rastrigin (n={n})",
         np.array([0, 0]).astype(float)
@@ -75,10 +76,11 @@ for i in range(len(functions)):
 fig.tight_layout()
 plt.show()
 
+"""
 
 if __name__ == "__main__":
     # Ask for input variables
-    print("")
+    print("GENETIC ALGORITHMS")
     print("Would you like to setup the parameters manually or go with the default values?")
     # WE CAN CHANGE THIS DEFAULT VALUES LATER
     print("Default population size: 4") 
@@ -86,6 +88,20 @@ if __name__ == "__main__":
     setup = input("\nGo with default values? [y/n] ")
     populationSize = 4 if setup == "y" else float(input("Set a population size: "))
     maxGenerations = 100 if setup == "y" else int(input("Set the maximum number of generations: "))
-"""
+
+    resultChart = pd.DataFrame()
+
+    for probNum in range(3):
+        p = 1 if probNum > 1 else 0
+        resultChart[name if not callable((name := problems[probNum-p][2])) else name([2, 5][p])] = ""
+
+        problem = problems[p]
+
+        realGA = RealGA(*problem[1])
+
+
+
+
+    print(resultChart)
 
 
