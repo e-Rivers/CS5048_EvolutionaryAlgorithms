@@ -467,10 +467,7 @@ class RealGA(GeneticAlgorithm):
 
 
 if __name__ == "__main__":
-    # Define Rastrigin function
-    def rastrigin(x):
-        A = 10
-        return A * len(x) + sum([(xi**2 - A * np.cos(2 * np.pi * xi)) for xi in x])
+
 
     def run_experiments(ga_class, problems, pop_size, num_generations, num_runs):
         results = []
@@ -512,7 +509,7 @@ if __name__ == "__main__":
             fitnesses = run_experiments(ga_class, [problem], pop_size=4, num_generations=10, num_runs=num_runs)
             results[ga_class.__name__][problem[2]] = {
                 'mean': np.mean(fitnesses),
-                #'std': np.std(fitnesses),
+                'std': np.std(fitnesses),
                 'min': np.min(fitnesses),
                 'max': np.max(fitnesses),
             }
@@ -521,7 +518,7 @@ if __name__ == "__main__":
     for ga_name, res in results.items():
         print(f"{ga_name}:")
         for prob_name, stats in res.items():
-            print(f"  {prob_name}: Mean: {stats['mean']}, Min: {stats['min']}, Max: {stats['max']}")
+            print(f"  {prob_name}: Mean: {stats['mean']}, Std Dev: {stats['std']} ,Min: {stats['min']}, Max: {stats['max']}")
 
 
     # You would call plot_convergence after running your experiments
