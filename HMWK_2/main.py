@@ -91,9 +91,13 @@ if __name__ == "__main__":
 
     resultChart = pd.DataFrame()
 
+    # Iterate through the 3 problems (p is the index of the problem)
     for probNum in range(3):
         p = 1 if probNum > 1 else 0
-        resultChart[name if not callable((name := problems[probNum-p][2])) else name([2, 5][p])] = ""
+
+
+        # Fill the chart with the results of the 20 executions
+        resultChart[name if not callable((name := problems[probNum-p][2])) else name([2, 5][p])] = 0
 
         problem = problems[p]
 
