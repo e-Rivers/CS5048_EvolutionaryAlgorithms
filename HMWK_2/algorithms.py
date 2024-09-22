@@ -29,7 +29,26 @@ class GeneticAlgorithm(ABC):
 
     @abstractmethod
     def run(self, verbose=False):
-        pass
+        # Step 1. Initialize Population
+        self._population = self.initialize_population()
+
+        # Step 2. Form the couples for creating children
+        couples = []
+        for _ in range(len(self._population)//2):
+            couples.append((
+                    self._selection()
+                    self._selection()
+                ))
+
+        # Step 3. Perform crossover only for couples with that probability (Pc)
+        newPopulation = []
+        for couple in couples:
+            crossProb = np.random.uniform()
+            if crossProb <= self._Pc:
+                newPopulation.extend(self._crossover(*couple))
+            else:
+                newPopulation.extend(couple)
+
 
     def _getFitness(self, individual):
         return self._func(individual)
@@ -388,7 +407,7 @@ class RealGA(GeneticAlgorithm):
         self._np = np
 
     # Binary tournament selection
-    def _selection(self, population):
+    def _selection(self):
         # Step 1. Shuffle individuals
         shuffledPop = np.random.shuffle(self._population.copy())
 
