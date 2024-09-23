@@ -305,11 +305,13 @@ class BinaryGA(GeneticAlgorithm):
         children =[]
 
         #select individuals random to perform the crossover
-        for i in range(len(parents)):
+        for i in range(0, len(parents), 2):
             r = random.random()
             if r < pc:
                 individuals_cross.append(parents[i])
+                individuals_cross.append(parents[i+1])
                 index_cross.append(i)
+                index_cross.append(i+1)
 
 
         # Make the crossover
