@@ -94,7 +94,7 @@ class BinaryGA(GeneticAlgorithm):
         bounds:
 
         Output:
-
+        best_solutions: a list of the best solution found in each generation
 
         """
         # Initialize population
@@ -102,12 +102,13 @@ class BinaryGA(GeneticAlgorithm):
         first_population = self.initialize_population(num_bits, popu_size)
         population = list(first_population)
         best_solutions = []
+        print(population)
 
 
         for generation in range(num_generations):
             # Decode population
             decoded_population = self.decoder(population, bounds, num_bits)
-            #print(decoded_population)
+            print(decoded_population)
         
             
             fit_list = self.function_evaluation(decoded_population, self._func)
@@ -132,7 +133,6 @@ class BinaryGA(GeneticAlgorithm):
             #print(f"Este es el mejor fitness {best_fitness}, generación {generation}")
             best_solutions.append(best_fitness)
 
-            #print(best_fitness, decoded_population )
             
             
         return best_solutions
@@ -248,7 +248,7 @@ class BinaryGA(GeneticAlgorithm):
         #Step 2 calculate the total fitness (f)
         #revert fitness values
         for i in fit_list:
-            i_new = max(fit_list) - i
+            i_new = max(fit_list) - i + 1e-6
             f += i_new
         
         # Step 3 calculate the probability for each element
@@ -257,7 +257,7 @@ class BinaryGA(GeneticAlgorithm):
             if f == 0:
                 new_prob = 1/len(fit_list)
             else:
-                new_prob = (max(fit_list) - i)/f
+                new_prob = (max(fit_list) - i + 1e-6)/f
             probability.append(new_prob)
         
         #Step 4 calculate the cumulative probability
@@ -265,9 +265,9 @@ class BinaryGA(GeneticAlgorithm):
             q += i  
             cumu_probability.append(q)
 
-        #print("probabilidad",probability)
-       # print(fit_list)    
-        #print("cumul",cumu_probability)
+        print("probabilidad",probability)
+        print(fit_list)    
+        print("cumul",cumu_probability)
         # step 5 get a pseudo-random number between 0 and 1
 
 
@@ -498,7 +498,7 @@ if __name__ == "__main__":
     for ga_class in [BinaryGA]: #aqui nomas agregamos la otra clase
         results[ga_class.__name__] = {}
         for problem in problems:
-            fitnesses, fitness_history = run_experiments(ga_class, [problem], pop_size=4, num_generations=1000, num_runs=num_runs)
+            fitnesses, fitness_history = run_experiments(ga_class, [problem], pop_size=100, num_generations=1000, num_runs=num_runs)
             fitnesses = np.array(fitnesses, dtype=float)
             results[ga_class.__name__][problem[2]] = {
                 'mean': np.mean(fitnesses),
