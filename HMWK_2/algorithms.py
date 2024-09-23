@@ -114,6 +114,7 @@ class BinaryGA(GeneticAlgorithm):
 
             # Store the best fitness and its corresponding decoded point
             best_fitness = fit_list[min_index]
+            print(f"Este es el mejor fitness {best_fitness}, generación {generation}")
             best_solutions.append(best_fitness)
 
             #print(best_fitness, decoded_population )
@@ -441,7 +442,7 @@ if __name__ == "__main__":
                 
                 # Get the best fitness value in this run
                 best_index = np.argmin(best_fitness)
-                #print(f"Fitness values: {best_fitness}")
+                #print(f"Best of generation: {best_index}")
                 results.append(best_fitness[best_index])
                 fitness_history.append(best_fitness)
         
@@ -474,7 +475,7 @@ if __name__ == "__main__":
     for ga_class in [BinaryGA]: #aqui nomas agregamos la otra clase
         results[ga_class.__name__] = {}
         for problem in problems:
-            fitnesses, fitness_history = run_experiments(ga_class, [problem], pop_size=4, num_generations=100, num_runs=num_runs)
+            fitnesses, fitness_history = run_experiments(ga_class, [problem], pop_size=4, num_generations=10, num_runs=num_runs)
             fitnesses = np.array(fitnesses, dtype=float)
             results[ga_class.__name__][problem[2]] = {
                 'mean': np.mean(fitnesses),
@@ -497,6 +498,8 @@ if __name__ == "__main__":
 
   
     rows = []
+    historial = []
+    auxi = []
 
     for ga_name, res in results.items():
         for prob_name, stats in res.items():
@@ -514,6 +517,13 @@ if __name__ == "__main__":
             
             rows.append(row)
 
+            historial_20_experiments = stats['fitness_history']
+            historial.append(historial_20_experiments)
+
+            name=[ga_name,prob_name]
+            auxi.append(name)
+
+
     with open('resultados.csv', mode='w', newline='') as file:
         writer = csv.writer(file)
         
@@ -521,3 +531,25 @@ if __name__ == "__main__":
         writer.writerow(header)
         
         writer.writerows(rows)
+
+##### plot random
+    #select a random experiment
+    r = random.randint(0, len(historial[0])-1)
+    print(auxi)
+    # select and plot the history of those 
+    y = np.arange(1, len(historial[0][0])+1)
+    cols_plot = 3
+    rows_plot = 1
+    plt.figure(figsize=(10, 5 * rows_plot))
+
+    for i in range(len(historial)) :
+        plt.subplot(rows_plot, cols_plot, i + 1)  # Crear un subplot
+        plt.plot(y, historial[i][r], linestyle='-', color='b')
+        plt.title(f'{auxi[i][1]}')
+        plt.xlabel('Number of generations')
+        plt.ylabel(f'Fitness value')
+        plt.grid()
+        
+    plt.tight_layout()  # Ajustar el layout
+    plt.show()
+    print(len(historial[0]))
