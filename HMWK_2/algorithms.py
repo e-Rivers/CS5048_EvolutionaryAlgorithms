@@ -113,15 +113,12 @@ class BinaryGA(GeneticAlgorithm):
             min_index = fit_list.index(min(fit_list))
 
             # Store the best fitness and its corresponding decoded point
-            #best_fitness = (fit_list[min_index], decoded_population[min_index])
             best_fitness = fit_list[min_index]
             best_solutions.append(best_fitness)
 
             #print(best_fitness, decoded_population )
             
             
-
-        # Return best solution
         return best_solutions
 
     def number_bits(self, x_min, x_max):
@@ -430,6 +427,7 @@ if __name__ == "__main__":
 
     def run_experiments(ga_class, problems, pop_size, num_generations, num_runs):
         results = []
+        fitness_history = []
         for func, bounds, description, initial_guess in problems:
             print(f"Running {description}...")
             for _ in range(num_runs):
@@ -443,10 +441,11 @@ if __name__ == "__main__":
                 
                 # Get the best fitness value in this run
                 best_index = np.argmin(best_fitness)
-                print(f"Fitness values: {best_fitness}")
+                #print(f"Fitness values: {best_fitness}")
                 results.append(best_fitness[best_index])
+                fitness_history.append(best_fitness)
         
-        return results
+        return results, fitness_history
 
     # Initialize problems
     problems = [
@@ -475,7 +474,7 @@ if __name__ == "__main__":
     for ga_class in [BinaryGA]: #aqui nomas agregamos la otra clase
         results[ga_class.__name__] = {}
         for problem in problems:
-            fitnesses = run_experiments(ga_class, [problem], pop_size=4, num_generations=100, num_runs=num_runs)
+            fitnesses, fitness_history = run_experiments(ga_class, [problem], pop_size=4, num_generations=100, num_runs=num_runs)
             fitnesses = np.array(fitnesses, dtype=float)
             results[ga_class.__name__][problem[2]] = {
                 'mean': np.mean(fitnesses),
@@ -490,3 +489,4 @@ if __name__ == "__main__":
         for prob_name, stats in res.items():
             print(f"  {prob_name}: Mean: {stats['mean']}, Std Dev: {stats['std']} ,Min: {stats['min']}, Max: {stats['max']}")
 
+    print(fitness_history)
