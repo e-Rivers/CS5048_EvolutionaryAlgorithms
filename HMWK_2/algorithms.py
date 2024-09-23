@@ -79,8 +79,8 @@ class GeneticAlgorithm(ABC):
 
 class BinaryGA(GeneticAlgorithm):
 
-    def __init__(self, lowerBound, upperBound, func, Pm=0.7):
-        super().__init__(lowerBound, upperBound, func, Pm)
+    def __init__(self, lowerBound, upperBound, func, Pc= 0.9,):
+        super().__init__(lowerBound, upperBound, func, Pc)
         
 
     def run(self, popu_size, num_generations, bounds):
@@ -119,10 +119,10 @@ class BinaryGA(GeneticAlgorithm):
             children = self._crossover(selected_individuals)
 
             # Mutation
-            mutated_population = self._mutation(children, 0.7)
+            mutated_population = self._mutation(children)
 
             # Update population
-            population = mutated_population
+            population = list(mutated_population)
 
             # print best fitness in the generation
             min_index = fit_list.index(min(fit_list))
@@ -246,17 +246,18 @@ class BinaryGA(GeneticAlgorithm):
         probability = []
 
         #Step 2 calculate the total fitness (f)
+        #revert fitness values
         for i in fit_list:
-            f += (i-min(fit_list))
-            print(f)
+            i_new = max(fit_list) - i
+            f += i_new
         
         # Step 3 calculate the probability for each element
         #In case that f is equal to zero all the individuals will have the same probability
         for i in fit_list:
             if f == 0:
-                new_prob = (i-min(fit_list))/len(fit_list)
+                new_prob = 1/len(fit_list)
             else:
-                new_prob = (i-min(fit_list))/f
+                new_prob = (max(fit_list) - i)/f
             probability.append(new_prob)
         
         #Step 4 calculate the cumulative probability
@@ -264,7 +265,9 @@ class BinaryGA(GeneticAlgorithm):
             q += i  
             cumu_probability.append(q)
 
-        
+        print("probabilidad",probability)
+        print(fit_list)    
+        print("cumul",cumu_probability)
         # step 5 get a pseudo-random number between 0 and 1
 
 
@@ -274,20 +277,23 @@ class BinaryGA(GeneticAlgorithm):
 
             # Find the first individual whose cumulative probability is greater than or equal to r
             for k in range(len(population)):
-                if r <= cumu_probability[k]:
-                    selected_individuals.append(population[k])
-                    break   
+                if k == 0:
+                    if r <= cumu_probability[k]:
+                        selected_individuals.append(population[k])
+                        break  
+                else:
+                    if r  
 
 
         return selected_individuals
 
-    def _crossover(self, parents, pc=0.7):
+    def _crossover(self, parents, pc=0.9):
         """
         Function to perfomr single point crossover
 
         input:
         parents: list of selected chromosomes
-        pc : probability of crossover (0.7 as default)
+        pc : probability of crossover (0.9 as default)
 
         output:
         parents: list of new  population including chromosomes after the crossover
@@ -335,13 +341,12 @@ class BinaryGA(GeneticAlgorithm):
 
       
     
-    def _mutation(self, population, pm):
+    def _mutation(self, population):
         """
         function to mutate genes randomly
 
         input:
         population: list of chromosomes
-        pm: probability of mutation
 
         output:
         population: list of individuals after mutation
@@ -451,7 +456,6 @@ if __name__ == "__main__":
         results = []
         fitness_history = []
         for func, bounds, description, initial_guess in problems:
-            print(f"Running {description}...")
             for _ in range(num_runs):
                 # Initialize GA with the bounds and function
                 lower_bound, upper_bound = bounds  # Extract min and max bounds
@@ -491,12 +495,12 @@ if __name__ == "__main__":
     )
 ]
 
-    num_runs = 20
+    num_runs = 1
     results = {}
     for ga_class in [BinaryGA]: #aqui nomas agregamos la otra clase
         results[ga_class.__name__] = {}
         for problem in problems:
-            fitnesses, fitness_history = run_experiments(ga_class, [problem], pop_size=10, num_generations=100, num_runs=num_runs)
+            fitnesses, fitness_history = run_experiments(ga_class, [problem], pop_size=4, num_generations=1000, num_runs=num_runs)
             fitnesses = np.array(fitnesses, dtype=float)
             results[ga_class.__name__][problem[2]] = {
                 'mean': np.mean(fitnesses),
