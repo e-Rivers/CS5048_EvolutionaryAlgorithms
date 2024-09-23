@@ -492,16 +492,14 @@ if __name__ == "__main__":
             print(f"  {prob_name}: Mean: {stats['mean']}, Std Dev: {stats['std']} ,Min: {stats['min']}, Max: {stats['max']}")
             print(f"  {prob_name}: 20 experiments: {stats['results']}")
 
-
+#### for the table
     import csv
 
   
     rows = []
 
-    # Recopilar los resultados en formato de tabla
     for ga_name, res in results.items():
         for prob_name, stats in res.items():
-            # Crear una fila básica con los stats
             row = [
                 ga_name,
                 prob_name,
@@ -511,20 +509,15 @@ if __name__ == "__main__":
                 stats['max']
             ]
             
-            # Agregar los valores de "20 experiments" como columnas adicionales
-            experiments = stats['results']  # Asegúrate de que esto sea una lista
+            experiments = stats['results']  
             row.extend(experiments)
             
-            # Añadir la fila completa a las filas
             rows.append(row)
 
-    # Escribir los resultados en un archivo CSV
     with open('resultados.csv', mode='w', newline='') as file:
         writer = csv.writer(file)
         
-        # Escribir el encabezado
         header = ['GA Name', 'Problem Name', 'Mean', 'Std Dev', 'Min', 'Max'] + [f'Experiment {i+1}' for i in range(len(stats['results']))]
         writer.writerow(header)
         
-        # Escribir las filas de resultados
         writer.writerows(rows)
