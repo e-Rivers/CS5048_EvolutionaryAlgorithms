@@ -27,18 +27,18 @@ def run_experiments(ga_class, problems, pop_size, num_generations, num_runs):
 
 # Initialize problems
 problems = [
-(
-    lambda x: 100*(x[0]**2 - x[1])**2 + (1 - x[0])**2,
-    np.array([-2.048, 2.048]).astype(float),
-    "Function A",
-    np.array([0, 0]).astype(float) 
-),
-(
-    lambda x: 10*len(x) + sum([(x_i**2 - 10*np.cos(2*np.pi*x_i)) for x_i in x]),
-    np.array([-5.12, 5.12]).astype(float),
-    "Rastrigin (n=2)",
-    np.array([0, 0]).astype(float)
-),
+#(
+#    lambda x: 100*(x[0]**2 - x[1])**2 + (1 - x[0])**2,
+#    np.array([-2.048, 2.048]).astype(float),
+#    "Function A",
+#    np.array([0, 0]).astype(float) 
+#),
+#(
+#    lambda x: 10*len(x) + sum([(x_i**2 - 10*np.cos(2*np.pi*x_i)) for x_i in x]),
+#    np.array([-5.12, 5.12]).astype(float),
+#    "Rastrigin (n=2)",
+#    np.array([0, 0]).astype(float)
+#),
 (
     lambda x: 10*len(x) + sum([(x_i**2 - 10*np.cos(2*np.pi*x_i)) for x_i in x]),
     np.array([-5.12, 5.12]).astype(float),
@@ -116,9 +116,9 @@ r = random.randint(0, len(historial[0])-1)
 print(auxi)
 # select and plot the history of those 
 y = np.arange(1, len(historial[0][0])+1)
-cols_plot = 3
-rows_plot = 1
-plt.figure(figsize=(10, 5 * rows_plot))
+cols_plot = 1
+rows_plot = 3
+plt.figure(figsize=(10, 2.5 * rows_plot))
 
 for i in range(len(historial)) :
     plt.subplot(rows_plot, cols_plot, i + 1)  # Crear un subplot

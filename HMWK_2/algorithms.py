@@ -8,16 +8,77 @@ from abc import ABC, abstractmethod
 import matplotlib.pyplot as plt
 import csv
 
+import time
+
+# Father class: GeneticAlgorithm
+class GeneticAlgorithm(ABC):
+
+    #    def __init__(self, popu_size, num_generations, ind_size, Pc=0.9, Pm=0.1):
+    def __init__(self, lowerBound, upperBound, func, Pc=0.9, Pm=0.1):
+        self._x_max = upperBound
+        self._x_min = lowerBound
+        self._func = func
+        self._population = None
+        #        self._pop_size = popu_size
+        #        self._num_generations = num_generations
+        #        self._ind_size = ind_size
+        #        self._population = self.initialize_population()
+        #        self._Pc = Pc   # Crossover Probability  
+        #        self._Pm = Pm   # Mutation Probability  
+
+    @abstractmethod
+    def initialize_population(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def run(self, verbose=False):
+        """# Step 1. Initialize Population
+        self._population = self.initialize_population()
+
+        # Step 2. Form the couples for creating children
+        couples = []
+        for _ in range(len(self._population)//2):
+            couples.append((
+                    self._selection()
+                    self._selection()
+                ))
+
+        # Step 3. Perform crossover only for couples with that probability (Pc)
+        newPopulation = []
+        for couple in couples:
+            crossProb = np.random.uniform()
+            if crossProb <= self._Pc:
+                newPopulation.extend(self._crossover(*couple))
+            else:
+                newPopulation.extend(couple)
+
+"""
+        raise NotImplementedError
+
+    def _getFitness(self, individual):
+        return self._func(individual)
+
+    @abstractmethod
+    def _crossover(self, parent1, parent2):
+        raise NotImplementedError
+
+    @abstractmethod
+    def _mutation(self, individual):
+        raise NotImplementedError
+    
+    @abstractmethod
+    def _selection(self):
+        raise NotImplementedError
+
 
 
 #####################################################################
 ################## Child class for Binary Encoding ##################
 #####################################################################
-
-class BinaryGA():
+class BinaryGA(GeneticAlgorithm):
 
     def __init__(self, lowerBound, upperBound, func, Pc= 0.9,):
-        self._func = func
+        super().__init__(lowerBound, upperBound, func)
         
 
     def run(self, popu_size, num_generations, bounds):
@@ -36,6 +97,8 @@ class BinaryGA():
         """
         # Initialize population
         num_bits = [self.number_bits(b[0], b[1]) for b in bounds]
+        #num_bits = self.number_bits()
+        print(num_bits)
         first_population = self.initialize_population(num_bits, popu_size)
         population = list(first_population)
         best_solutions = []
@@ -74,7 +137,7 @@ class BinaryGA():
             
         return best_solutions
 
-    def number_bits(self, x_min, x_max):
+    def number_bits(self, a, b):
         """
         Determine the number of bits needed to encode the solution.
         
@@ -85,7 +148,7 @@ class BinaryGA():
         Output:
         num_bits -- Represents the length of the solution
         """
-        num_bits = (x_max - x_min) * 10**4
+        num_bits = (self._x_max - self._x_min) * 10**4
         num_bits = math.log(num_bits, 2)
         num_bits = math.floor(num_bits + 0.99)
         return num_bits
