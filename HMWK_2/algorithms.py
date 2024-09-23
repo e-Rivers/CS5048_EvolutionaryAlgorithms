@@ -128,11 +128,11 @@ class BinaryGA(GeneticAlgorithm):
         """
         Determine the number of bits needed to encode the solution.
         
-        Arguments:
+        Input:
         x_min -- Minimum value that the solution can take
         x_max -- Maximum value that the solution can take
         
-        Returns:
+        Output:
         num_bits -- Represents the length of the solution
         """
         num_bits = (x_max - x_min) * 10**4
@@ -144,11 +144,11 @@ class BinaryGA(GeneticAlgorithm):
         """
         Function to initialize the population by encoding variables.
         
-        Arguments:
+        Input:
         num_bits -- List of bits needed to encode each variable
         popu_size -- Number of individuals (genomes or chromosomes)
         
-        Returns:
+        Output:
         population -- List of randomly generated solutions
         """
         population = []
@@ -163,12 +163,12 @@ class BinaryGA(GeneticAlgorithm):
         """
         Function to decode from binary numbers to real ones.
         
-        Arguments:
+        Input:
         population -- List of binary encoded individuals
         bounds -- List of tuples representing min and max bounds for each variable
         num_bits -- List of bits for each variable
         
-        Returns:
+        Output:
         decode_population -- List of decoded real values for each individual
         """
         decode_population = []
@@ -472,7 +472,7 @@ if __name__ == "__main__":
 
     num_runs = 20
     results = {}
-    for ga_class in [BinaryGA]: #aqui nomas agregamos la otra cosa
+    for ga_class in [BinaryGA]: #aqui nomas agregamos la otra clase
         results[ga_class.__name__] = {}
         for problem in problems:
             fitnesses = run_experiments(ga_class, [problem], pop_size=4, num_generations=100, num_runs=num_runs)
@@ -489,5 +489,4 @@ if __name__ == "__main__":
         print(f"{ga_name}:")
         for prob_name, stats in res.items():
             print(f"  {prob_name}: Mean: {stats['mean']}, Std Dev: {stats['std']} ,Min: {stats['min']}, Max: {stats['max']}")
-
 
