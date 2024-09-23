@@ -265,9 +265,9 @@ class BinaryGA(GeneticAlgorithm):
             q += i  
             cumu_probability.append(q)
 
-        print("probabilidad",probability)
-        print(fit_list)    
-        print("cumul",cumu_probability)
+        #print("probabilidad",probability)
+       # print(fit_list)    
+        #print("cumul",cumu_probability)
         # step 5 get a pseudo-random number between 0 and 1
 
 
@@ -277,12 +277,10 @@ class BinaryGA(GeneticAlgorithm):
 
             # Find the first individual whose cumulative probability is greater than or equal to r
             for k in range(len(population)):
-                if k == 0:
-                    if r <= cumu_probability[k]:
-                        selected_individuals.append(population[k])
-                        break  
-                else:
-                    if r  
+                if r <= cumu_probability[k]:
+                    selected_individuals.append(population[k])
+                    break  
+                 
 
 
         return selected_individuals
@@ -495,7 +493,7 @@ if __name__ == "__main__":
     )
 ]
 
-    num_runs = 1
+    num_runs = 20
     results = {}
     for ga_class in [BinaryGA]: #aqui nomas agregamos la otra clase
         results[ga_class.__name__] = {}
@@ -523,8 +521,10 @@ if __name__ == "__main__":
     historial = []
     auxi = []
 
+    # Recopilar los resultados en formato de tabla
     for ga_name, res in results.items():
         for prob_name, stats in res.items():
+            # Crear una fila básica con los stats
             row = [
                 ga_name,
                 prob_name,
@@ -534,9 +534,11 @@ if __name__ == "__main__":
                 stats['max']
             ]
             
-            experiments = stats['results']  
+            # Agregar los valores de "20 experiments" como columnas adicionales
+            experiments = stats['results']  # Asegúrate de que esto sea una lista
             row.extend(experiments)
             
+            # Añadir la fila completa a las filas
             rows.append(row)
 
             historial_20_experiments = stats['fitness_history']
@@ -548,7 +550,7 @@ if __name__ == "__main__":
 
     with open('resultados.csv', mode='w', newline='') as file:
         writer = csv.writer(file)
-        
+        print(len(stats['results']))
         header = ['GA Name', 'Problem Name', 'Mean', 'Std Dev', 'Min', 'Max'] + [f'Experiment {i+1}' for i in range(len(stats['results']))]
         writer.writerow(header)
         
