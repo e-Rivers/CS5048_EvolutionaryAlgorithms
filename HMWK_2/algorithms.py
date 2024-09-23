@@ -4,7 +4,9 @@ import sympy
 from sympy import symbols
 import math
 from abc import ABC, abstractmethod
+
 import matplotlib.pyplot as plt
+import csv
 
 
 # Father class: GeneticAlgorithm
@@ -82,6 +84,19 @@ class BinaryGA(GeneticAlgorithm):
         
 
     def run(self, popu_size, num_generations, bounds):
+        """
+        Function to run the GA with binary encoding
+
+        Input:
+        self:
+        popu_size:
+        num_generations:
+        bounds:
+
+        Output:
+
+
+        """
         # Initialize population
         num_bits = [self.number_bits(b[0], b[1]) for b in bounds]
         first_population = self.initialize_population(num_bits, popu_size)
@@ -114,7 +129,7 @@ class BinaryGA(GeneticAlgorithm):
 
             # Store the best fitness and its corresponding decoded point
             best_fitness = fit_list[min_index]
-            print(f"Este es el mejor fitness {best_fitness}, generación {generation}")
+            #print(f"Este es el mejor fitness {best_fitness}, generación {generation}")
             best_solutions.append(best_fitness)
 
             #print(best_fitness, decoded_population )
@@ -233,6 +248,7 @@ class BinaryGA(GeneticAlgorithm):
         #Step 2 calculate the total fitness (f)
         for i in fit_list:
             f += (i-min(fit_list))
+            print(f)
         
         # Step 3 calculate the probability for each element
         #In case that f is equal to zero all the individuals will have the same probability
@@ -250,7 +266,7 @@ class BinaryGA(GeneticAlgorithm):
 
         
         # step 5 get a pseudo-random number between 0 and 1
-        # then
+
 
         selected_individuals =[]
         for i in range(len(population)):
@@ -423,6 +439,11 @@ class RealGA(GeneticAlgorithm):
     def __str__(self):
         return "Real Encoding"
 
+##################################
+##################################
+###### MAIN PRUEBA ###############
+##################################
+##################################
 
 if __name__ == "__main__":
 
@@ -475,7 +496,7 @@ if __name__ == "__main__":
     for ga_class in [BinaryGA]: #aqui nomas agregamos la otra clase
         results[ga_class.__name__] = {}
         for problem in problems:
-            fitnesses, fitness_history = run_experiments(ga_class, [problem], pop_size=4, num_generations=10, num_runs=num_runs)
+            fitnesses, fitness_history = run_experiments(ga_class, [problem], pop_size=10, num_generations=100, num_runs=num_runs)
             fitnesses = np.array(fitnesses, dtype=float)
             results[ga_class.__name__][problem[2]] = {
                 'mean': np.mean(fitnesses),
@@ -494,9 +515,6 @@ if __name__ == "__main__":
             print(f"  {prob_name}: 20 experiments: {stats['results']}")
 
 #### for the table
-    import csv
-
-  
     rows = []
     historial = []
     auxi = []
