@@ -498,7 +498,7 @@ if __name__ == "__main__":
     for ga_class in [BinaryGA]: #aqui nomas agregamos la otra clase
         results[ga_class.__name__] = {}
         for problem in problems:
-            fitnesses, fitness_history = run_experiments(ga_class, [problem], pop_size=100, num_generations=1000, num_runs=num_runs)
+            fitnesses, fitness_history = run_experiments(ga_class, [problem], pop_size=10, num_generations=250, num_runs=num_runs)
             fitnesses = np.array(fitnesses, dtype=float)
             results[ga_class.__name__][problem[2]] = {
                 'mean': np.mean(fitnesses),
