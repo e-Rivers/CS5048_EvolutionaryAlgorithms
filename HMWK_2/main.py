@@ -5,8 +5,24 @@ import matplotlib.pyplot as plt
 
 
 def run_experiments(ga_class, problems, pop_size, num_generations, num_runs):
+    """
+    Function to run a geneic algorithm for a set of given problems
+
+    input: 
+    ga_class: The genetic algorithm class
+    problems: A list of problems, each with a fitness function, bounds, name, and number of decision variables.
+    pop_size: population size for the genetic algorithm
+    num_generations: Number of generations
+    num_runs:  Number of independent runs
+
+    output:
+    results: List of best fitness values for each run.
+    fitness_history: History of fitness values across generations for each run.
+
+    """
     results = []
     fitness_history = []
+    # loop thorugh each problem
     for func, bounds, _, decision_vars in problems:
         for _ in range(num_runs):
             # Initialize GA with the bounds and function
@@ -18,7 +34,6 @@ def run_experiments(ga_class, problems, pop_size, num_generations, num_runs):
             
             # Get the best fitness value in this run
             best_index = np.argmin(best_fitness)
-            #print(f"Best of generation: {best_index}")
             results.append(best_fitness[best_index])
             fitness_history.append(best_fitness)
     
@@ -46,16 +61,24 @@ problems = [
     )
 ]
 
+# Ask for input variables
+print("Would you like to setup the parameters manually or go with the default values?")
+print("Population size: 10")
+print("Number of generations: 250")
+print("Number of runs: 20")
+setup = input("\nGo with default values? [y/n] ")
+pop_size = 10 if setup == "y" else int(input("Set an initial guess for the step size: "))
+num_generations = 250 if setup == "y" else int(input("Set a tolerance value: "))
+num_runs = 20 if setup == "y" else int(input("Set the maximum number of iterations: "))
 
-num_runs = 20
 results = {}
-for ga_class in [BinaryGA, RealGA]: #aqui nomas agregamos la otra clase
+for ga_class in [BinaryGA, RealGA]: 
     results[ga_class.__name__] = {}
 
     print("\n\n\n\n",ga_class.__name__,"\n\n\n\n")
 
     for problem in problems:
-        fitnesses, fitness_history = run_experiments(ga_class, [problem], pop_size=50, num_generations=250, num_runs=num_runs)
+        fitnesses, fitness_history = run_experiments(ga_class, [problem], pop_size=pop_size, num_generations=num_generations, num_runs=num_runs)
         fitnesses = np.array(fitnesses, dtype=float)
         results[ga_class.__name__][problem[2]] = {
             'mean': np.mean(fitnesses),
@@ -66,7 +89,7 @@ for ga_class in [BinaryGA, RealGA]: #aqui nomas agregamos la otra clase
             'results' : fitnesses
         }
 
-# Print results
+# Print the results (mean, standard deviation, min, max) for each GA and problem
 for ga_name, res in results.items():
     print(f"{ga_name}:")
     for prob_name, stats in res.items():
@@ -77,10 +100,10 @@ rows = []
 historial = []
 auxi = []
 
-# Recopilar los resultados en formato de tabla
+# Collect results for CSV writing
 for ga_name, res in results.items():
     for prob_name, stats in res.items():
-        # Crear una fila básica con los stats
+        # Row with the stats
         row = [
             ga_name,
             prob_name,
@@ -90,39 +113,34 @@ for ga_name, res in results.items():
             stats['max']
         ]
         
-        # Agregar los valores de "20 experiments" como columnas adicionales
-        experiments = stats['results']  # Asegúrate de que esto sea una lista
+        # experiment results as additional columns
+        experiments = stats['results']  
         row.extend(experiments)
-        
-        # Añadir la fila completa a las filas
         rows.append(row)
-
         historial_20_experiments = stats['fitness_history']
         historial.append(historial_20_experiments)
 
+        # Append GA and problem names to the auxiliary list
         name=[ga_name,prob_name]
         auxi.append(name)
 
-
+# Write results to CSV
 with open('resultados.csv', mode='w', newline='') as file:
     writer = csv.writer(file)
     print(len(stats['results']))
     header = ['GA Name', 'Problem Name', 'Mean', 'Std Dev', 'Min', 'Max'] + [f'Experiment {i+1}' for i in range(len(stats['results']))]
     writer.writerow(header)
-    
     writer.writerows(rows)
 
-# plot random
-#select a random experiment
+# Plot a random experiment's fitness history
 r = random.randint(0, len(historial[0])-1)
-print(auxi)
-# select and plot the history of those 
 y = np.arange(1, len(historial[0][0])+1)
 
 cols_plot = 1
 rows_plot = 3
 plt.figure(figsize=(10, 2.5 * rows_plot))
 
+# Plot fitness history for the selected experiment
 print(len(historial))
 for i in range(len(historial)//2) :
     plt.subplot(rows_plot, cols_plot, i + 1)  # Crear un subplot
@@ -134,6 +152,5 @@ for i in range(len(historial)//2) :
     plt.legend()
     plt.grid()
     
-plt.tight_layout()  # Ajustar el layout
+plt.tight_layout()  
 plt.show()
-print(len(historial[0]))
