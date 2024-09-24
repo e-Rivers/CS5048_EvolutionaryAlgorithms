@@ -1,62 +1,99 @@
 import numpy as np
 import random
-import sympy
-from sympy import symbols
 import math
 from abc import ABC, abstractmethod
 
 import matplotlib.pyplot as plt
 import csv
 
-import time
 
 # Father class: GeneticAlgorithm
 class GeneticAlgorithm(ABC):
 
-    #    def __init__(self, popu_size, num_generations, ind_size, Pc=0.9, Pm=0.1):
-    def __init__(self, lowerBound, upperBound, func, Pc=0.9, Pm=0.1):
+    def __init__(self, lowerBound, upperBound, varNum, func, popu_size, Pc=0.9, Pm=0.1):
         self._x_max = upperBound
         self._x_min = lowerBound
         self._func = func
-        self._population = None
-        #        self._pop_size = popu_size
-        #        self._num_generations = num_generations
-        #        self._ind_size = ind_size
-        #        self._population = self.initialize_population()
-        #        self._Pc = Pc   # Crossover Probability  
-        #        self._Pm = Pm   # Mutation Probability  
+        self._population = []
+        self._vars = varNum 
+        self._popu_size = popu_size
+        self._Pc = Pc           # Probability of crossover
+        self._Pm = Pm           # Probability of mutation
+
+    def run(self, num_generations):
+        """
+        Function to run the GA with binary encoding
+
+        Input:
+        self:
+        popu_size:
+        num_generations:
+        bounds:
+
+        Output:
+        best_solutions: a list of the best solution found in each generation
+
+        """
+        # Initialize population
+        self.initialize_population()
+        best_solutions = []
+
+        for generation in range(num_generations):
+            
+            # Evaluation
+            fit_list = self._evaluation(self._getPopulation())
+
+            # Selection
+            selected_individuals = self._selection(fit_list)
+
+            # Crossover
+            children = self._crossover(selected_individuals)
+
+            # Mutation
+            mutated_population = self._mutation(children)
+
+            # Update population
+            self._population = list(mutated_population)
+
+            # print best fitness in the generation
+            min_index = fit_list.index(min(fit_list))
+
+            # Store the best fitness and its corresponding decoded point
+            best_fitness = fit_list[min_index]
+            #print(f"Este es el mejor fitness {best_fitness}, generación {generation}")
+            best_solutions.append(best_fitness)
+
+        return best_solutions
+
+    def _evaluation(self, population):
+        """
+        function to evaluate the population into the objective function
+
+        input:
+        population: list of the real values for each individual (decoded in the case of binary)
+
+        ----------
+
+        output:
+        fit_list: list of the fitness of each individual
+        """
+
+        fit_list = []
+        for i in population:
+            current_value = self._func(i)
+            fit_list.append(current_value)
+            
+        return fit_list
+    
+    # ABSTRACT METHODS
+
+    @abstractmethod
+    def _getPopulation(self):
+        raise NotImplementedError
 
     @abstractmethod
     def initialize_population(self):
         raise NotImplementedError
-
-    @abstractmethod
-    def run(self, verbose=False):
-        """# Step 1. Initialize Population
-        self._population = self.initialize_population()
-
-        # Step 2. Form the couples for creating children
-        couples = []
-        for _ in range(len(self._population)//2):
-            couples.append((
-                    self._selection()
-                    self._selection()
-                ))
-
-        # Step 3. Perform crossover only for couples with that probability (Pc)
-        newPopulation = []
-        for couple in couples:
-            crossProb = np.random.uniform()
-            if crossProb <= self._Pc:
-                newPopulation.extend(self._crossover(*couple))
-            else:
-                newPopulation.extend(couple)
-
-"""
-        raise NotImplementedError
-
-    def _getFitness(self, individual):
-        return self._func(individual)
 
     @abstractmethod
     def _crossover(self, parent1, parent2):
@@ -77,67 +114,14 @@ class GeneticAlgorithm(ABC):
 #####################################################################
 class BinaryGA(GeneticAlgorithm):
 
-    def __init__(self, lowerBound, upperBound, func, Pc= 0.9,):
-        super().__init__(lowerBound, upperBound, func)
-        
+    def __init__(self, lowerBound, upperBound, varNum, func, popu_size, Pc= 0.9, Pm=0.1):
+        super().__init__(lowerBound, upperBound, varNum, func, popu_size, Pc, Pm)
+        self._num_bits = self.number_bits()
 
-    def run(self, popu_size, num_generations, bounds):
-        """
-        Function to run the GA with binary encoding
+    def _getPopulation(self):
+        return self.decoder()
 
-        Input:
-        self:
-        popu_size:
-        num_generations:
-        bounds:
-
-        Output:
-        best_solutions: a list of the best solution found in each generation
-
-        """
-        # Initialize population
-        num_bits = [self.number_bits(b[0], b[1]) for b in bounds]
-        #num_bits = self.number_bits()
-        print(num_bits)
-        first_population = self.initialize_population(num_bits, popu_size)
-        population = list(first_population)
-        best_solutions = []
-        print(population)
-
-
-        for generation in range(num_generations):
-            # Decode population
-            decoded_population = self.decoder(population, bounds, num_bits)
-            print(decoded_population)
-        
-            
-            fit_list = self.function_evaluation(decoded_population, self._func)
-
-            # Selection
-            selected_individuals = self._selection(fit_list, population)
-
-            # Crossover
-            children = self._crossover(selected_individuals)
-
-            # Mutation
-            mutated_population = self._mutation(children)
-
-            # Update population
-            population = list(mutated_population)
-
-            # print best fitness in the generation
-            min_index = fit_list.index(min(fit_list))
-
-            # Store the best fitness and its corresponding decoded point
-            best_fitness = fit_list[min_index]
-            #print(f"Este es el mejor fitness {best_fitness}, generación {generation}")
-            best_solutions.append(best_fitness)
-
-            
-            
-        return best_solutions
-
-    def number_bits(self, a, b):
+    def number_bits(self):
         """
         Determine the number of bits needed to encode the solution.
         
@@ -153,7 +137,7 @@ class BinaryGA(GeneticAlgorithm):
         num_bits = math.floor(num_bits + 0.99)
         return num_bits
 
-    def initialize_population(self, num_bits, popu_size):
+    def initialize_population(self):
         """
         Function to initialize the population by encoding variables.
         
@@ -164,15 +148,14 @@ class BinaryGA(GeneticAlgorithm):
         Output:
         population -- List of randomly generated solutions
         """
-        population = []
         # Initialize each individual in the population
-        for _ in range(popu_size):
-            chromosome = ''.join(''.join(str(random.randint(0, 1)) for _ in range(bits)) for bits in num_bits)
-            population.append(chromosome)
-        return population
+        num_bits = self.number_bits()
+        for _ in range(self._popu_size):
+            chromosome = ''.join(''.join(str(random.randint(0, 1)) for _ in range(num_bits)) for _ in range(self._vars))
+            self._population.append(chromosome)
 
     
-    def decoder(self, population, bounds, num_bits):
+    def decoder(self):
         """
         Function to decode from binary numbers to real ones.
         
@@ -185,46 +168,25 @@ class BinaryGA(GeneticAlgorithm):
         decode_population -- List of decoded real values for each individual
         """
         decode_population = []
-        for individual in population:
+        for individual in self._population:
             values = []
             pos = 0
             # Decode each variable
-            for idx, bits in enumerate(num_bits):
-                genome = individual[pos:pos+bits]
+            for _ in range(self._vars):
+                genome = individual[pos:pos+self._num_bits]
                 decimal_value = int(genome, 2)
-                min_bound, max_bound = bounds[idx]
+
                 # Scale the decimal value to its original range
-                real_value = min_bound + decimal_value * ((max_bound - min_bound) / (2**bits - 1))
+                real_value = self._x_min + decimal_value * ((self._x_max - self._x_min) / (2**self._num_bits - 1))
                 values.append(round(real_value, 4))
-                pos += bits
+                pos += self._num_bits
             decode_population.append(values)
         return decode_population
 
 
-    def function_evaluation(self, decode_population, func):
-        """
-        function to evaluate the population into the objective function
-
-        input:
-        decode population: list of the real values for each individual (chromosome = [x1, x2])
-        fun: objective function
-
-        ----------
-
-        output:
-        fit_list: list of the fitness of each individual
-        """
-
-        fit_list = []
-        for i in decode_population:
-            current_value = func(i)
-            fit_list.append(current_value)
-            
-
-        return fit_list
 
     #Roulette wheel
-    def _selection(self, fit_list, population): 
+    def _selection(self, fit_list): 
         """
         To select individuals using the roulette wheel method
 
@@ -265,27 +227,25 @@ class BinaryGA(GeneticAlgorithm):
             q += i  
             cumu_probability.append(q)
 
-        print("probabilidad",probability)
-        print(fit_list)    
-        print("cumul",cumu_probability)
+        #print("probabilidad",probability)
+        #print(fit_list)    
+        #print("cumul",cumu_probability)
         # step 5 get a pseudo-random number between 0 and 1
 
 
         selected_individuals =[]
-        for i in range(len(population)):
+        for i in range(len(self._population)):
             r = random.random()
 
             # Find the first individual whose cumulative probability is greater than or equal to r
-            for k in range(len(population)):
+            for k in range(len(self._population)):
                 if r <= cumu_probability[k]:
-                    selected_individuals.append(population[k])
+                    selected_individuals.append(self._population[k])
                     break  
                  
-
-
         return selected_individuals
 
-    def _crossover(self, parents, pc=0.9):
+    def _crossover(self, parents):
         """
         Function to perfomr single point crossover
 
@@ -297,8 +257,6 @@ class BinaryGA(GeneticAlgorithm):
         parents: list of new  population including chromosomes after the crossover
         """
 
-        
-
         #empty lists for selected individual to crossover and childrens
         individuals_cross = []
         index_cross = []
@@ -307,7 +265,7 @@ class BinaryGA(GeneticAlgorithm):
         #select individuals random to perform the crossover
         for i in range(0, len(parents), 2):
             r = random.random()
-            if r < pc:
+            if r < self._Pc:
                 individuals_cross.append(parents[i])
                 individuals_cross.append(parents[i+1])
                 index_cross.append(i)
@@ -340,7 +298,6 @@ class BinaryGA(GeneticAlgorithm):
         return parents
 
       
-    
     def _mutation(self, population):
         """
         function to mutate genes randomly
@@ -365,12 +322,7 @@ class BinaryGA(GeneticAlgorithm):
             chromosome_mutated = chromosome[:gene_number] + gene + chromosome[(gene_number+1):]
             population[i] = chromosome_mutated
 
-        
         return population
-
-    def __str__(self):
-        return "Binary Encoding"
-
 
 
 
@@ -378,95 +330,121 @@ class BinaryGA(GeneticAlgorithm):
 ############# Child class for Real Encoding #################
 #############################################################
 
-class RealGA():
+class RealGA(GeneticAlgorithm):
 
-    def __init__(self, lowerBound, upperBound, func, nc = 20, np = 20):
-        self._xL = lowerBound
-        self._xU = upperBound
-        self._func = func
+    def __init__(self, lowerBound, upperBound, varNum, func, popu_size, nc=20, nm=20, Pc= 0.9, Pm=0.1):
+        super().__init__(lowerBound, upperBound, varNum, func, popu_size, Pc, Pm)
         self._nc = nc
-        self._np = np
-        self._eta_m = 20
+        self._eta_m = nm
 
-    # Binary tournament selection
-    def _selection(self):
-        # Step 1. Shuffle individuals
-        shuffledPop = np.random.shuffle(self._population.copy())
+    def _getPopulation(self):
+        return self._population
 
-        # Step 2. Get two random individuals
-        candidate1 = np.random.choice(shuffledPop)
-        candidate2 = np.random.choice(shuffledPop)
+    def initialize_population(self):
+        for _ in range(self._popu_size):
+            chromosome = [np.random.uniform(self._x_min, self._x_max) for _ in range(self._vars)]
+            self._population.append(chromosome)
 
-        # Step 3. Make them compete based on their fitness
-        fitnessCand1 = self._getFitness(candidate1)
-        fitnessCand2 = self._getFitness(candidate2)
-
-        return candidate1 if fitnessCand1 < fitnessCand2 else candidate2
-
-    # Simulated Binary Crossover (SBX)
-    def _crossover(self, parent1, parent2, uTest = None):
-        # Step 1. Compute a random number u between 0 and 1
-        u = np.random.uniform() if uTest == None else uTest
-
-        # Step 2. Compute beta_m
-        if u <= 0.5:
-            beta_m = (2*u)**(1 / (self._nc + 1))
-        else:
-            beta_m = (1 / (2*(1 - u)))**(1 / (self._nc + 1))
-
-        # Step 3. Produce children
-        H1 = 0.5 * ((leftSide := (parent1 + parent2)) - (rightSide := beta_m*np.abs(parent2 - parent1)))
-        H2 = 0.5 * (leftSide + rightSide)
-
-        return H1, H2
-
-    # Parameter-based mutation
-    def _mutation(self, individual, uTest = None, iTest = None):
-        # Step 0. Randomly select the gene to be mutated
-        i = np.random.uniform() if iTest == None else iTest
-        gene = individual[i]
-
-        # Step 1. Compute a random number u between 0 and 1
-        u = np.random.uniform() if uTest == None else uTest
-
-        # Step 2. Compute delta sub q
-        eta_m = self._eta_m # This actually is calculated as 100 + t, where t = generation num. But for the hwmk, it was required as 20
-        delta = min((gene - self._xL), (self._xU - gene)) / (self._xU - self._xL)
-        if u <= 0.5:
-            delta_q = (2*u + (1-2*u)*(1-delta)**(eta_m+1))**(1 / (eta_m+1)) - 1
-        else:
-            delta_q = 1 - (2*(1-u) + 2*(u-0.5)*(1-delta)**(eta_m+1))**(1 / (eta_m+1))
-
-        # Step 3. Perform the mutation 
-        deltaMax = self._xU - self._xL
-        mutatedGene = gene + delta_q*deltaMax
-        individual[i] = mutatedGene
+    def _limitIndividual(self, individual):
+        for gene in range(self._vars):
+            if individual[gene] > self._x_max:
+                individual[gene] = self._x_max
+            elif individual[gene] < self._x_min:
+                individual[gene] = self._x_min
 
         return individual 
 
-    def run(self):
-        # Step 1. Initialize Population
-        self._population = self.initialize_population()
 
-        # Step 2. Form the couples for creating children
-        couples = []
-        for _ in range(len(self._population)//2):
-            couples.append((
-                    self._selection(),
-                    self._selection()
-                ))
+    # Binary tournament selection
+    def _selection(self, fit_list):
 
-        # Step 3. Perform crossover only for couples with that probability (Pc)
+        evaluatedIndividuals = list(zip(self._population.copy(), fit_list))
+
+        parents = []
+        for _ in self._population:
+
+            # Step 1. Shuffle individuals
+            shuffledPop = list(evaluatedIndividuals)
+            np.random.shuffle(shuffledPop)
+
+            # Step 2. Get two random individuals
+            randChoice1 = np.random.randint(0, len(shuffledPop))
+            randChoice2 = np.random.randint(0, len(shuffledPop))
+            candidate1 = shuffledPop[randChoice1]
+            candidate2 = shuffledPop[randChoice2]
+
+            # Step 3. Make them compete based on their fitness
+            fitnessCand1 = candidate1[1]
+            fitnessCand2 = candidate2[1]
+
+            # Step 4. Select the fittest individual (the one that minimizes)
+            parents.append(candidate1[0] if fitnessCand1 < fitnessCand2 else candidate2[0])
+
+        return parents
+
+    # Simulated Binary Crossover (SBX)
+    def _crossover(self, parents):
+
         newPopulation = []
-        for couple in couples:
-            crossProb = np.random.uniform()
+
+        for parent1, parent2 in list(zip(parents[::2], parents[1::2])):
+            
+            # Compute the probability of crossover for the current couple
+            crossProb = np.random.random()
+
             if crossProb <= self._Pc:
-                newPopulation.extend(self._crossover(*couple))
+
+                # Step 1. Compute a random number u between 0 and 1
+                u = np.random.uniform()
+
+                # Step 2. Compute beta_m
+                if u <= 0.5:
+                    beta_m = (2*u)**(1 / (self._nc + 1))
+                else:
+                    beta_m = (1 / (2*(1 - u)))**(1 / (self._nc + 1))
+
+                # Step 3. Produce children
+                H1 = 0.5 * ((leftSide := (np.array(parent1) + np.array(parent2))) - (rightSide := beta_m*np.abs(np.array(parent2) - np.array(parent1))))
+                H2 = 0.5 * (leftSide + rightSide)
+
+                newPopulation.extend([self._limitIndividual(H1), self._limitIndividual(H2)])
             else:
-                newPopulation.extend(couple)
+                newPopulation.extend([parent1, parent2])
 
-    def _getFitness(self, individual):
-        return self._func(individual)
+        return newPopulation
 
-    def __str__(self):
-        return "Real Encoding"
+
+    # Parameter-based mutation
+    def _mutation(self, population):
+
+        newPopulation = []
+        for individual in population:
+
+            # Compute the probability of mutation for the current individual 
+            mutProb = np.random.random()
+
+            if mutProb <= self._Pm:
+
+                # Step 1. Randomly select the gene to be mutated
+                i = np.random.randint(0, len(individual))
+                gene = individual[i]
+
+                # Step 2. Compute a random number u between 0 and 1
+                u = np.random.random()
+
+                # Step 3. Compute delta sub q
+                eta_m = self._eta_m # This actually is calculated as 100 + t, where t = generation num. But for the hwmk, it was required as 20
+                delta = min((gene - self._x_min), (self._x_max - gene)) / (self._x_max - self._x_min)
+                if u <= 0.5:
+                    delta_q = (2*u + (1-2*u)*(1-delta)**(eta_m+1))**(1 / (eta_m+1)) - 1
+                else:
+                    delta_q = 1 - (2*(1-u) + 2*(u-0.5)*(1-delta)**(eta_m+1))**(1 / (eta_m+1))
+
+                # Step 4. Perform the mutation 
+                deltaMax = self._x_max - self._x_min
+                mutatedGene = gene + delta_q*deltaMax
+                individual[i] = mutatedGene
+
+            newPopulation.append(self._limitIndividual(individual))
+
+        return newPopulation 
