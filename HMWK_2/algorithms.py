@@ -10,7 +10,7 @@ import csv
 # Father class: GeneticAlgorithm
 class GeneticAlgorithm(ABC):
 
-    def __init__(self, lowerBound, upperBound, varNum, func, popu_size, Pc=0.9, Pm=0.1):
+    def __init__(self, lowerBound, upperBound, varNum, func, popu_size, Pc=0.9, Pm = None ):
         self._x_max = upperBound
         self._x_min = lowerBound
         self._func = func
@@ -18,7 +18,7 @@ class GeneticAlgorithm(ABC):
         self._vars = varNum 
         self._popu_size = popu_size
         self._Pc = Pc           # Probability of crossover
-        self._Pm = Pm           # Probability of mutation
+        self._Pm = None          # Probability of mutation
 
     def run(self, num_generations):
         """
@@ -33,6 +33,7 @@ class GeneticAlgorithm(ABC):
         """
         # Initialize population
         self.initialize_population()
+        self._Pm = 1/len(self._population[0])
         best_solutions = []
 
         for generation in range(num_generations):
@@ -283,26 +284,48 @@ class BinaryGA(GeneticAlgorithm):
         """
         function to mutate genes randomly
 
+
         input:
         population: list of chromosomes
 
         output:
         population: list of individuals after mutation
         """ 
-
-        # In each chromosome we will mutate  one gene
+        #Pm = 1/(len(population[0]))
         for i in range(len(population)):
+            r = random.random()
+            if r < self._Pm:
+                chromosome = population[i]
+                gene_number = random.randint(0, len(chromosome)-1)
+                gene = chromosome[gene_number]
+
+                if gene == '0':
+                    gene = '1'
+                else:
+                    gene = '0'
+                chromosome_mutated = chromosome[:gene_number] + gene + chromosome[(gene_number+1):]
+                population[i] = chromosome_mutated
+
+        # In each chromosome we will mutate  one gene if a random number is bigger than the pm
+        """for i in range(len(population)):
             chromosome = population[i]
-            gene_number = random.randint(0, len(chromosome)-1)
-            gene = chromosome[gene_number]
+            new_chromosome = ''
+            for j in range(len(chromosome)):
+                r = random.random()
+                gene_number = j
+                gene = chromosome[gene_number]
+                
+                if r < Pm:
+                    
 
-            if gene == '0':
-                gene = '1'
-            else:
-                gene = '0'
-            chromosome_mutated = chromosome[:gene_number] + gene + chromosome[(gene_number+1):]
-            population[i] = chromosome_mutated
+                    if gene == '0':
+                        gene = '1'
+                    else:
+                        gene = '0'
+                new_chromosome += gene
+            population[i] = new_chromosome"""
 
+            
         return population
 
 

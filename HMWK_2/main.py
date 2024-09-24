@@ -63,13 +63,13 @@ problems = [
 
 # Ask for input variables
 print("Would you like to setup the parameters manually or go with the default values?")
-print("Population size: 10")
+print("Population size: 100")
 print("Number of generations: 250")
 print("Number of runs: 20")
 setup = input("\nGo with default values? [y/n] ")
-pop_size = 10 if setup == "y" else int(input("Set an initial guess for the step size: "))
-num_generations = 250 if setup == "y" else int(input("Set a tolerance value: "))
-num_runs = 20 if setup == "y" else int(input("Set the maximum number of iterations: "))
+pop_size = 100 if setup == "y" else int(input("Set a population size: "))
+num_generations = 250 if setup == "y" else int(input("Set a number of generations: "))
+num_runs = 20 if setup == "y" else int(input("Set the number of runs: "))
 
 results = {}
 for ga_class in [BinaryGA, RealGA]: 
@@ -148,7 +148,7 @@ for i in range(len(historial)//2) :
     plt.plot(y, historial[i+3][r], linestyle='-', color='r', label="Real")
     plt.title(f'{auxi[i][1]}')
     plt.xlabel('Number of generations')
-    plt.ylabel('Fitness value')
+    plt.ylabel('Best Fitness value')
     plt.legend()
     plt.grid()
     
