@@ -22,13 +22,10 @@ class GeneticAlgorithm(ABC):
 
     def run(self, num_generations):
         """
-        Function to run the GA with binary encoding
+        Function to run the GA 
 
         Input:
-        self:
-        popu_size:
-        num_generations:
-        bounds:
+        num_generations: Number of generations
 
         Output:
         best_solutions: a list of the best solution found in each generation
@@ -70,6 +67,7 @@ class GeneticAlgorithm(ABC):
         function to evaluate the population into the objective function
 
         input:
+
         population: list of the real values for each individual (decoded in the case of binary)
 
         ----------
@@ -112,6 +110,7 @@ class GeneticAlgorithm(ABC):
 #####################################################################
 ################## Child class for Binary Encoding ##################
 #####################################################################
+
 class BinaryGA(GeneticAlgorithm):
 
     def __init__(self, lowerBound, upperBound, varNum, func, popu_size, Pc= 0.9, Pm=0.1):
@@ -125,12 +124,9 @@ class BinaryGA(GeneticAlgorithm):
         """
         Determine the number of bits needed to encode the solution.
         
-        Input:
-        x_min -- Minimum value that the solution can take
-        x_max -- Maximum value that the solution can take
         
         Output:
-        num_bits -- Represents the length of the solution
+        num_bits : Represents the length of the solution
         """
         num_bits = (self._x_max - self._x_min) * 10**4
         num_bits = math.log(num_bits, 2)
@@ -141,12 +137,6 @@ class BinaryGA(GeneticAlgorithm):
         """
         Function to initialize the population by encoding variables.
         
-        Input:
-        num_bits -- List of bits needed to encode each variable
-        popu_size -- Number of individuals (genomes or chromosomes)
-        
-        Output:
-        population -- List of randomly generated solutions
         """
         # Initialize each individual in the population
         num_bits = self.number_bits()
@@ -159,13 +149,9 @@ class BinaryGA(GeneticAlgorithm):
         """
         Function to decode from binary numbers to real ones.
         
-        Input:
-        population -- List of binary encoded individuals
-        bounds -- List of tuples representing min and max bounds for each variable
-        num_bits -- List of bits for each variable
-        
         Output:
         decode_population -- List of decoded real values for each individual
+
         """
         decode_population = []
         for individual in self._population:
@@ -192,7 +178,6 @@ class BinaryGA(GeneticAlgorithm):
 
         input:
         fit_list : list of the fitness of each individual of the population
-        probabilities: the individuals (or chromosomes)
 
         ----------
 
@@ -227,9 +212,6 @@ class BinaryGA(GeneticAlgorithm):
             q += i  
             cumu_probability.append(q)
 
-        #print("probabilidad",probability)
-        #print(fit_list)    
-        #print("cumul",cumu_probability)
         # step 5 get a pseudo-random number between 0 and 1
 
 
@@ -251,7 +233,6 @@ class BinaryGA(GeneticAlgorithm):
 
         input:
         parents: list of selected chromosomes
-        pc : probability of crossover (0.9 as default)
 
         output:
         parents: list of new  population including chromosomes after the crossover
@@ -341,11 +322,23 @@ class RealGA(GeneticAlgorithm):
         return self._population
 
     def initialize_population(self):
+        """"
+        Function to randomly initialize population
+        """
         for _ in range(self._popu_size):
             chromosome = [np.random.uniform(self._x_min, self._x_max) for _ in range(self._vars)]
             self._population.append(chromosome)
 
     def _limitIndividual(self, individual):
+        """
+        Function to make sure that the individuals are inside the range
+
+        Input:
+        inividual : a real individual
+
+        Output:
+        individual : an individual inside the range
+        """
         for gene in range(self._vars):
             if individual[gene] > self._x_max:
                 individual[gene] = self._x_max
@@ -357,6 +350,15 @@ class RealGA(GeneticAlgorithm):
 
     # Binary tournament selection
     def _selection(self, fit_list):
+        """
+        Function to select individuals using the binary tournament selection method
+
+        Input:
+        fit_list: list with the fitness for each individual
+
+        Outpu:
+        parents: list of selected individuals
+        """
 
         evaluatedIndividuals = list(zip(self._population.copy(), fit_list))
 
@@ -384,6 +386,16 @@ class RealGA(GeneticAlgorithm):
 
     # Simulated Binary Crossover (SBX)
     def _crossover(self, parents):
+
+        """
+        Function to perform crossover
+
+        Input:
+        parents: list of the population
+
+        Output:
+        newPopulation : list of the new population
+        """
 
         newPopulation = []
 
@@ -416,6 +428,15 @@ class RealGA(GeneticAlgorithm):
 
     # Parameter-based mutation
     def _mutation(self, population):
+        """
+        Function to perform parameter-based mutation
+
+        input:
+        population: list of individuals
+
+        output: 
+        newPopulation: list of new population (including mutated individuals)
+        """
 
         newPopulation = []
         for individual in population:
