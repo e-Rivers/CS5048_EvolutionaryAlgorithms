@@ -1,0 +1,38 @@
+⦿ Function A
+- Real Evaluation: 0.0
+	◙ Gradient Descent
+		- Point Found: [0.84580153 0.71460617]
+		- Evaluation: 0.023837084413852166
+		- Iterations: 1001
+		- Two Norm Error: 0.3243868148904921
+	◙ Newton's Method
+		- Point Found: [1. 1.]
+		- Evaluation: 1.5461673742331831e-28
+		- Iterations: 7
+		- Two Norm Error: 2.780438251636946e-14
+	◙ Hill Climber
+		- Point Found: [0.762000000000002, 0.5779999999999992]
+		- Evaluation: 0.057343073600001085
+		- Iterations: 290
+		- Two Norm Error: 0.4844873579362001
+
+
+⦿ Rastrigin Function
+- Real Evaluation: 0.0
+	◙ Gradient Descent
+		- Point Found: [-1.98991399  1.98991399]
+		- Evaluation: 7.9596623823286095
+		- Iterations: 427
+		- Two Norm Error: 2.8141633515677835
+	◙ Newton's Method
+		- Point Found: [-1.98991223  1.98991223]
+		- Evaluation: 7.959662381108174
+		- Iterations: 4
+		- Two Norm Error: 2.814160868842771
+	◙ Hill Climber
+		- Point Found: [-1.99, 1.99]
+		- Evaluation: 7.959665431434569
+		- Iterations: 2
+		- Two Norm Error: 2.8142849891224593
+
+

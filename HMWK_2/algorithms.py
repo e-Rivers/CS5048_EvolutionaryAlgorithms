@@ -36,7 +36,7 @@ class GeneticAlgorithm(ABC):
         self._Pm = 1/len(self._population[0])
         best_solutions = []
 
-        for generation in range(num_generations):
+        for generation in range(1, num_generations+1):
             
             # Evaluation
             fit_list = self._evaluation(self._getPopulation())
@@ -60,6 +60,12 @@ class GeneticAlgorithm(ABC):
             best_fitness = fit_list[min_index]
             #print(f"Este es el mejor fitness {best_fitness}, generación {generation}")
             best_solutions.append(best_fitness)
+
+
+            # Stopping Criterion (if the standard deviation of the last 5 generations is less than threshold 5)
+            if generation % 5 == 0:
+                if np.std(np.array(best_solutions[generation-5:])) < 0.5:
+                    return best_solutions
 
         return best_solutions
 
