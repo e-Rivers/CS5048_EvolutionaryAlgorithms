@@ -64,7 +64,7 @@ class GeneticAlgorithm(ABC):
 
             # Stopping Criterion (if the standard deviation of the last 5 generations is less than threshold 5)
             if generation % 5 == 0:
-                if np.std(np.array(best_solutions[generation-5:])) < 0.5:
+                if np.std(np.array(best_solutions[generation-5:])) < 0.005:
                     return best_solutions
 
         return best_solutions

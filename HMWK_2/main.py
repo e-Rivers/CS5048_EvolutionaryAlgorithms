@@ -134,18 +134,21 @@ with open('resultados.csv', mode='w', newline='') as file:
 
 # Plot a random experiment's fitness history
 r = random.randint(0, len(historial[0])-1)
-y = np.arange(1, len(historial[0][0])+1)
+
+
+
 
 cols_plot = 1
 rows_plot = 3
 plt.figure(figsize=(10, 2.5 * rows_plot))
 
 # Plot fitness history for the selected experiment
-print(len(historial))
 for i in range(len(historial)//2) :
     plt.subplot(rows_plot, cols_plot, i + 1)  # Crear un subplot
-    plt.plot(y, historial[i][r], linestyle='-', color='b', label="Binary")
-    plt.plot(y, historial[i+3][r], linestyle='-', color='r', label="Real")
+    y1 = np.arange(1, len(historial[i][r])+1)
+    y2 = np.arange(1, len(historial[i+3][r])+1)
+    plt.plot(y1, historial[i][r], linestyle='-', color='b', label="Binary")
+    plt.plot(y2, historial[i+3][r], linestyle='-', color='r', label="Real")
     plt.title(f'{auxi[i][1]}')
     plt.xlabel('Number of generations')
     plt.ylabel('Best Fitness value')
