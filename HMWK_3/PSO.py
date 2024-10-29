@@ -163,6 +163,38 @@ class Experiment:
         self.report.plot_convergence(output_folder, self.func_name)
 
 if __name__ == "__main__":
+    
+    def layeb05(x):
+        n = len(x)
+        result = 0
+        for i in range(n - 1):
+            numerator = np.log(abs(np.sin(x[i] - np.pi / 2) + np.cos(x[i + 1] - np.pi)) + 0.001)
+            denominator = abs(np.cos(2 * x[i] - x[i + 1] + np.pi / 2)) + 1
+            result += numerator / denominator
+        return result
+    
+    def layeb10(x):
+        n = len(x)
+        result = 0
+        for i in range(n - 1):
+            result += (np.log(x[i]**2 + x[i + 1]**2 + 0.5))**2 + abs(100 * np.sin(x[i] - x[i + 1]))
+        return result
+    
+    def layeb15(x):
+        n = len(x)
+        result = 0
+        for i in range(n - 1):
+            result += 10 * np.sqrt(np.tanh(abs(2 * x[i] - x[i + 1]**2 - 1))) + np.exp(x[i] * x[i + 1]) - 1
+
+        return result
+
+    def layeb18(x):
+        n = len(x)
+        result = 0
+        for i in range(n - 1):
+            result += 1
+        return result
+
     problems = [
         (
             lambda x: 10 * len(x) + sum([(x_i**2 - 10 * np.cos(2 * np.pi * x_i)) for x_i in x]),
@@ -174,6 +206,24 @@ if __name__ == "__main__":
             lambda x: sum([100 * (x[i + 1] - x[i]**2)**2 + (1 - x[i])**2 for i in range(len(x) - 1)]),
             np.array([-2.5, 2.5]).astype(float),
             "Rosenbrock (n=2)",
+            2
+        ),
+        (
+            layeb05,
+            np.array([-10, 10]).astype(float),
+            "Layeb05 (n=2)",
+            2
+        ),
+        (
+            layeb10,
+            np.array([-10, 10]).astype(float),
+            "Layeb10 (n=2)",
+            2
+        ),
+        (
+            layeb15,
+            np.array([-10, 10]).astype(float),
+            "Layeb15 (n=2)",
             2
         )
     ]
