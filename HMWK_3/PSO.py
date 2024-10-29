@@ -178,11 +178,16 @@ if __name__ == "__main__":
         )
     ]
 
-    swarm_size = 30       # Number of particles
-    Gmax = 100            # Generations
-    c1 = 1.5              # Cognitive parameter
-    c2 = 1.5              # Social parameter
-    w = 0.5               # Inertia weight
+    # Number of particles
+    swarm_size = 30       
+    # Generations
+    Gmax = 100
+    # Cognitive parameter
+    c1 = 1.5  
+    # Social parameter
+    c2 = 1.5
+    # Inertia weight
+    w = 0.5               
     number_executions = 5
     output_folder = "experiment_results"
 
