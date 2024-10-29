@@ -168,9 +168,9 @@ if __name__ == "__main__":
         n = len(x)
         result = 0
         for i in range(n - 1):
-            numerator = np.log(abs(np.sin(x[i] - np.pi / 2) + np.cos(x[i + 1] - np.pi)) + 0.001)
-            denominator = abs(np.cos(2 * x[i] - x[i + 1] + np.pi / 2)) + 1
-            result += numerator / denominator
+            up = np.log(abs(np.sin(x[i] - np.pi / 2) + np.cos(x[i + 1] - np.pi)) + 0.001)
+            down = abs(np.cos(2 * x[i] - x[i + 1] + np.pi / 2)) + 1
+            result += up / down
         return result
     
     def layeb10(x):
