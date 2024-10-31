@@ -6,10 +6,16 @@ from abc import ABC, abstractmethod
 # Father class: GeneticAlgorithm
 class GeneticAlgorithm(ABC):
 
+<<<<<<< Updated upstream
     #    def __init__(self, popu_size, num_generations, ind_size, Pc=0.9, Pm=0.1):
     def __init__(self, lowerBound, upperBound, func, Pc=0.9, Pm=0.1):
         self._xU = upperBound
         self._xL = lowerBound
+=======
+    def __init__(self, lowerBound, upperBound, varNum, func, popu_size, Pc=0.9, Pm = None):
+        self._x_max = upperBound
+        self._x_min = lowerBound
+>>>>>>> Stashed changes
         self._func = func
         self._population = None
         #        self._pop_size = popu_size
@@ -19,6 +25,90 @@ class GeneticAlgorithm(ABC):
         #        self._Pc = Pc   # Crossover Probability  
         #        self._Pm = Pm   # Mutation Probability  
 
+<<<<<<< Updated upstream
+=======
+    def run(self, num_generations):
+        """
+        Function to run the GA 
+
+        Input:
+        num_generations: Number of generations
+
+        Output:
+        best_solutions: a list of the best solution found in each generation
+
+        """
+        # Initialize population
+        self.initialize_population()
+        self._Pm = 1/len(self._population[0])
+        best_solutions = []
+        best_individuals = []
+
+        for generation in range(1, num_generations+1):
+            
+            # Evaluation
+            fit_list = self._evaluation(self._getPopulation())
+
+            # Selection
+            selected_individuals = self._selection(fit_list)
+
+            # Crossover
+            children = self._crossover(selected_individuals)
+
+            # Mutation
+            mutated_population = self._mutation(children)
+
+            # Update population
+            self._population = list(mutated_population)
+
+            # print best fitness in the generation
+            fit_list = self._evaluation(self._getPopulation())
+            min_index = fit_list.index(min(fit_list))
+
+            # Store the best fitness and its corresponding decoded point
+            best_fitness = fit_list[min_index]
+            best_individual = self._population[min_index]
+            #print(f"Este es el mejor fitness {best_fitness}, generación {generation}")
+            best_solutions.append(best_fitness)
+            best_individuals.append(best_individual)
+
+
+            # Stopping Criterion (if the standard deviation of the last 5 generations is less than threshold 5)
+            if generation % 10 == 0:
+                if np.std(np.array(best_solutions[generation-10:])) < 0.05:
+                    return best_solutions, best_individuals
+
+        return best_solutions, best_individuals
+
+    def _evaluation(self, population):
+        """
+        function to evaluate the population into the objective function
+
+        input:
+
+        population: list of the real values for each individual (decoded in the case of binary)
+
+        ----------
+
+        output:
+        fit_list: list of the fitness of each individual
+        """
+
+        fit_list = []
+        for i in population:
+            current_value = self._func(i)
+            fit_list.append(current_value)
+            
+        return fit_list
+    
+    # ABSTRACT METHODS
+
+    @abstractmethod
+    def _getPopulation(self):
+        raise NotImplementedError
+
+    @abstractmethod
+>>>>>>> Stashed changes
     def initialize_population(self):
         raise NotImplementedError
 
@@ -406,6 +496,121 @@ class RealGA(GeneticAlgorithm):
         return "Real Encoding"
 
 
+<<<<<<< Updated upstream
 if __name__ == "__main__":
     ##
     print("esto aún no se ha terminado")
+=======
+    # Parameter-based mutation
+    def _mutation(self, population):
+        """
+        Function to perform parameter-based mutation
+
+        input:
+        population: list of individuals
+
+        output: 
+        newPopulation: list of new population (including mutated individuals)
+        """
+
+        newPopulation = []
+        for individual in population:
+
+            # Compute the probability of mutation for the current individual 
+            mutProb = np.random.random()
+
+            if mutProb <= self._Pm:
+
+                # Step 1. Randomly select the gene to be mutated
+                i = np.random.randint(0, len(individual))
+                gene = individual[i]
+
+                # Step 2. Compute a random number u between 0 and 1
+                u = np.random.random()
+
+                # Step 3. Compute delta sub q
+                eta_m = self._eta_m # This actually is calculated as 100 + t, where t = generation num. But for the hwmk, it was required as 20
+                delta = min((gene - self._x_min), (self._x_max - gene)) / (self._x_max - self._x_min)
+                if u <= 0.5:
+                    delta_q = (2*u + (1-2*u)*(1-delta)**(eta_m+1))**(1 / (eta_m+1)) - 1
+                else:
+                    delta_q = 1 - (2*(1-u) + 2*(u-0.5)*(1-delta)**(eta_m+1))**(1 / (eta_m+1))
+
+                # Step 4. Perform the mutation 
+                deltaMax = self._x_max - self._x_min
+                mutatedGene = gene + delta_q*deltaMax
+                individual[i] = mutatedGene
+
+            newPopulation.append(self._limitIndividual(individual))
+
+        return newPopulation 
+
+
+###############################################################
+############## Class for the Hybrid GA and DE #################
+###############################################################
+
+class HybridDE(GeneticAlgorithm):
+
+    def __init__(self, lowerBound, upperBound, varNum, func, popu_size, nc=20, nm=20, Pc= 0.9, Pm=0.1):
+        super().__init__(lowerBound, upperBound, varNum, func, popu_size, Pc, Pm)
+        self._nc = nc
+        self._eta_m = nm
+
+    def _getPopulation(self):
+        return self._population
+
+    def initialize_population(self):
+        """"
+        Function to randomly initialize population
+        """
+        for _ in range(self._popu_size):
+            chromosome = [np.random.uniform(self._x_min, self._x_max) for _ in range(self._vars)]
+            self._population.append(chromosome)
+
+    def _limitIndividual(self, individual):
+        """
+        Function to make sure that the individuals are inside the range
+
+        Input:
+        inividual : a real individual
+
+        Output:
+        individual : an individual inside the range
+        """
+        for gene in range(self._vars):
+            if individual[gene] > self._x_max:
+                individual[gene] = self._x_max
+            elif individual[gene] < self._x_min:
+                individual[gene] = self._x_min
+
+        return individual 
+
+
+    def _selection(self, fit_list):
+        pass
+
+    # Simulated Binary Crossover (SBX)
+    def _crossover(self, parents):
+        pass
+
+
+    # Parameter-based mutation
+    def _mutation(self, population, F=0.5):
+        newPopulation = np.empty_like(population)
+        numIndividuals, numFeatures = population.shape
+    
+        for i in range(numIndividuals):
+            # Randomly select three individuals from the population, ensuring they are distinct from each other and from i
+            indices = np.random.choice(np.delete(np.arange(numIndividuals), i), 3, replace=False)
+            x1, x2, x3 = population[indices[0]], population[indices[1]], population[indices[2]]
+
+            # Calculate the mutant vector
+            mutantVector = x1 + F * (x2 - x3)
+
+            # Store the mutant vector in the new population
+            newPopulation[i] = mutantVector
+    
+        return newPopulation
+
+>>>>>>> Stashed changes
