@@ -6,16 +6,9 @@ from abc import ABC, abstractmethod
 # Father class: GeneticAlgorithm
 class GeneticAlgorithm(ABC):
 
-<<<<<<< Updated upstream
-    #    def __init__(self, popu_size, num_generations, ind_size, Pc=0.9, Pm=0.1):
-    def __init__(self, lowerBound, upperBound, func, Pc=0.9, Pm=0.1):
-        self._xU = upperBound
-        self._xL = lowerBound
-=======
     def __init__(self, lowerBound, upperBound, varNum, func, popu_size, Pc=0.9, Pm = None):
         self._x_max = upperBound
         self._x_min = lowerBound
->>>>>>> Stashed changes
         self._func = func
         self._population = None
         #        self._pop_size = popu_size
@@ -25,8 +18,6 @@ class GeneticAlgorithm(ABC):
         #        self._Pc = Pc   # Crossover Probability  
         #        self._Pm = Pm   # Mutation Probability  
 
-<<<<<<< Updated upstream
-=======
     def run(self, num_generations):
         """
         Function to run the GA 
@@ -108,7 +99,6 @@ class GeneticAlgorithm(ABC):
         raise NotImplementedError
 
     @abstractmethod
->>>>>>> Stashed changes
     def initialize_population(self):
         raise NotImplementedError
 
@@ -496,11 +486,6 @@ class RealGA(GeneticAlgorithm):
         return "Real Encoding"
 
 
-<<<<<<< Updated upstream
-if __name__ == "__main__":
-    ##
-    print("esto aún no se ha terminado")
-=======
     # Parameter-based mutation
     def _mutation(self, population):
         """
@@ -612,5 +597,3 @@ class HybridDE(GeneticAlgorithm):
             newPopulation[i] = mutantVector
     
         return newPopulation
-
->>>>>>> Stashed changes
