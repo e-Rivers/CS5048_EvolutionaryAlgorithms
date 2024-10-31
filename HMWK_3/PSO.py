@@ -192,7 +192,9 @@ if __name__ == "__main__":
         n = len(x)
         result = 0
         for i in range(n - 1):
-            result += 1
+            numerator = np.log(np.abs(np.cos(2 * x[i] * x[i+1] / np.pi)) + 0.001)
+            denominator = np.abs(np.sin(x[i] + x[i+1]) * np.cos(x[i]) + 1)
+            result += numerator / denominator
         return result
 
     problems = [
@@ -224,6 +226,12 @@ if __name__ == "__main__":
             layeb15,
             np.array([-10, 10]).astype(float),
             "Layeb15 (n=2)",
+            2
+        ),
+        (
+            layeb18,
+            np.array([-10, 10]).astype(float),
+            "Layeb18 (n=2)",
             2
         )
     ]
