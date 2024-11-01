@@ -2,6 +2,8 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from statistics import mean, stdev
+
 
 
 class Parameters:
@@ -146,6 +148,7 @@ class Report:
         plt.legend()
         plt.savefig(f"{output_folder}/{func_name.replace(' ', '_')}_convergence.png")
         plt.clf()
+    
 
 class Experiment:
     def __init__(self, params, problem, number_executions):
@@ -161,6 +164,8 @@ class Experiment:
             print(f"Execution {execution + 1} - {self.func_name} - Best fitness= {best_particle.objective_value}")
         self.report.save_to_csv(f"{output_folder}/{self.func_name.replace(' ', '_')}_results.csv")
         self.report.plot_convergence(output_folder, self.func_name)
+
+        
 
 if __name__ == "__main__":
     
@@ -192,24 +197,10 @@ if __name__ == "__main__":
         n = len(x)
         result = 0
         for i in range(n - 1):
-            numerator = np.log(np.abs(np.cos(2 * x[i] * x[i+1] / np.pi)) + 0.001)
-            denominator = np.abs(np.sin(x[i] + x[i+1]) * np.cos(x[i]) + 1)
-            result += numerator / denominator
+            result += np.log(np.abs(np.cos(2 * x[i] * x[i+1] / np.pi)) + 0.001) / np.abs(np.sin(x[i] + x[i+1]) * np.cos(x[i]) + 1)
         return result
 
     problems = [
-        (
-            lambda x: 10 * len(x) + sum([(x_i**2 - 10 * np.cos(2 * np.pi * x_i)) for x_i in x]),
-            np.array([-5.12, 5.12]).astype(float),
-            "Rastrigin (n=2)",
-            2
-        ),
-        (
-            lambda x: sum([100 * (x[i + 1] - x[i]**2)**2 + (1 - x[i])**2 for i in range(len(x) - 1)]),
-            np.array([-2.5, 2.5]).astype(float),
-            "Rosenbrock (n=2)",
-            2
-        ),
         (
             layeb05,
             np.array([-10, 10]).astype(float),
@@ -218,13 +209,13 @@ if __name__ == "__main__":
         ),
         (
             layeb10,
-            np.array([-10, 10]).astype(float),
+            np.array([-100, 100]).astype(float),
             "Layeb10 (n=2)",
             2
         ),
         (
             layeb15,
-            np.array([-10, 10]).astype(float),
+            np.array([-100, 100]).astype(float),
             "Layeb15 (n=2)",
             2
         ),
@@ -237,16 +228,16 @@ if __name__ == "__main__":
     ]
 
     # Number of particles
-    swarm_size = 30       
+    swarm_size = 50       
     # Generations
     Gmax = 100
     # Cognitive parameter
-    c1 = 1.5  
+    c1 = 2.4 
     # Social parameter
     c2 = 1.5
     # Inertia weight
-    w = 0.5               
-    number_executions = 5
+    w = 0.6             
+    number_executions = 30
     output_folder = "experiment_results"
 
     params = Parameters(swarm_size, Gmax, c1, c2, w)
