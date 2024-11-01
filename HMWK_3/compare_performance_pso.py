@@ -3,7 +3,7 @@ from scipy.stats import ranksums
 
 # Load CSV files for PSO, GA, and DE methods
 # ESTO LO MODIFICAMOS YA DESPUES QUE TENGAMOS LOS ARCHIVOS
-pso_df = pd.read_csv('pso_results.csv')
+pso_df = pd.read_csv('/Users/cdr_c/Documents/CS5048_EvolutionaryAlgorithms/HMWK_3/experiment_results_pso/problem.csv')
 ga_df = pd.read_csv('ga_results.csv')
 de_df = pd.read_csv('de_results.csv')
 

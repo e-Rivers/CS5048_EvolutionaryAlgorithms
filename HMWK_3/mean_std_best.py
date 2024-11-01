@@ -2,7 +2,7 @@ import pandas as pd
 import os
 
 # Define the directory containing the CSV files
-input_dir = '/Users/cdr_c/Documents/CS5048_EvolutionaryAlgorithms/HMWK_3/experiment_results'
+input_dir = '/Users/cdr_c/Documents/CS5048_EvolutionaryAlgorithms/HMWK_3/experiment_results_pso'
 output_dir = '/Users/cdr_c/Documents/CS5048_EvolutionaryAlgorithms/HMWK_3/processed_results'
 
 # Ensure the output directory exists
