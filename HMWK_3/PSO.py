@@ -139,13 +139,25 @@ class Report:
         df.to_csv(output_file, index=False)
 
     def plot_convergence(self, output_folder, func_name):
+
+        global_minima = {
+            "Layeb05 (n=2)": -6.907,
+            "Layeb10 (n=2)": 0,
+            "Layeb15 (n=2)": 0,
+            "Layeb18 (n=2)": -6.907
+        }
+        if func_name in global_minima:
+            plt.axhline(global_minima[func_name], color='r', linestyle='--', label='Global Minimum')
+
         for execution in range(len(self.best_individuals) // self.generations):
             execution_data = [record[2] for record in self.best_individuals if record[1] == execution]
             plt.plot(execution_data, label=f'Execution {execution + 1}')
         plt.xlabel('Generation')
         plt.ylabel('Best Fitness')
         plt.title(f'Convergence Plot for {func_name}')
-        plt.legend()
+        #plt.legend(loc="upper right", bbox_to_anchor=(1.15, 1), fontsize='small', ncol=2, frameon=True)
+        plt.tight_layout()
+
         plt.savefig(f"{output_folder}/{func_name.replace(' ', '_')}_convergence.png")
         plt.clf()
     
@@ -189,7 +201,7 @@ if __name__ == "__main__":
         n = len(x)
         result = 0
         for i in range(n - 1):
-            result += 10 * np.sqrt(np.tanh(abs(2 * x[i] - x[i + 1]**2 - 1))) + np.exp(x[i] * x[i + 1]) - 1
+            result += 10 * np.sqrt(np.tanh(2 * abs( x[i]) - x[i + 1]**2 - 1)) + abs(np.exp(x[i] * x[i + 1]) - 1)
 
         return result
 
@@ -197,7 +209,7 @@ if __name__ == "__main__":
         n = len(x)
         result = 0
         for i in range(n - 1):
-            result += np.log(np.abs(np.cos(2 * x[i] * x[i+1] / np.pi)) + 0.001) / np.abs(np.sin(x[i] + x[i+1]) * np.cos(x[i]) + 1)
+            result += np.log(np.abs(np.cos(2 * x[i] * x[i+1] / np.pi)) + 0.001) / (np.abs(np.sin(x[i] + x[i+1]) * np.cos(x[i])) + 1)
         return result
 
     problems = [
@@ -232,13 +244,13 @@ if __name__ == "__main__":
     # Generations
     Gmax = 100
     # Cognitive parameter
-    c1 = 2.4 
+    c1 = 2.3 
     # Social parameter
     c2 = 1.5
     # Inertia weight
-    w = 0.6             
+    w = 0.4            
     number_executions = 30
-    output_folder = "experiment_results"
+    output_folder = "experiment_results_pso"
 
     params = Parameters(swarm_size, Gmax, c1, c2, w)
 
