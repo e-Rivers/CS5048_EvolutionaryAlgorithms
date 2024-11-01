@@ -152,6 +152,8 @@ class Report:
         for execution in range(len(self.best_individuals) // self.generations):
             execution_data = [record[2] for record in self.best_individuals if record[1] == execution]
             plt.plot(execution_data, label=f'Execution {execution + 1}')
+        
+        plt.xscale('log')
         plt.xlabel('Generation')
         plt.ylabel('Best Fitness')
         plt.title(f'Convergence Plot for {func_name}')

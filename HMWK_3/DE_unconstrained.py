@@ -86,6 +86,7 @@ class Report:
             execution_data = [record[2] for record in self.best_individuals if record[1] == execution]
             plt.plot(execution_data, label=f'Execution {execution + 1}')
 
+        plt.xscale('log')
         plt.xlabel('Generation')
         plt.ylabel('Best Fitness')
         plt.title(f'Convergence Plot for {func_name} DE')
@@ -176,4 +177,4 @@ if __name__ == "__main__":
             for generation, best_fitness in generations:
                 report.add_best_individual_at_generation(generation, execution, best_fitness)
         report.plot_convergence(output_folder, func_name)
-        report.save_to_csv(f"{output_folder}/{func_name}.csv")
+        report.save_to_csv(f"{output_folder}/{func_name.replace(' ', '_')}_results.csv")
