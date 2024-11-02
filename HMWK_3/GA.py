@@ -1,7 +1,7 @@
 import numpy as np
+import pandas as pd
 import random
 import math
-from problems_Part1 import PROBLEMS
 import matplotlib.pyplot as plt
 import csv
 import os
@@ -14,40 +14,39 @@ class RealGA():
         self._population = []
         self._vars = len(problem["Bounds"])
         self._popu_size = popu_size
-        self._Pc = Pc           # Probability of crossover
-        self._Pm = None          # Probability of mutation
+        self._Pc = Pc               # Probability of crossover
+        self._Pm = None             # Probability of mutation
         self._nc = nc
         self._eta_m = nm
 
-    def _evaluation(self, population):
-        fit_list = [self._func(ind) for ind in population]
-        return fit_list
+    def _gradient(self, f, x, epsilon=1e-8):
+        gradient = np.zeros_like(x)
+        for i in range(len(x)):
+            x_plus = np.copy(x)
+            x_minus = np.copy(x)
+            x_plus[i] += epsilon
+            x_minus[i] -= epsilon
+            gradient[i] = (f(x_plus) - f(x_minus)) / (2 * epsilon)
+        return gradient
 
     # Function to evaluate fitness including constraint handling technique transformation
     def _evaluation(self, population):
-        c1 = 3250
-        c2 = 2000
-        ß = 2
-        Y = 2
-
         fitnessList = []
 
         for individual in population:
 
-            # Compute the overall penalty for all inequality constraints G(x)
             inequalityPenalty = 0
-            if len(self._problem["Constraints"]["Inequality"]) == 0:
-                for constraint in self._problem["Constraints"]["Inequality"]:
-                    inequalityPenalty += max(0, constraint(individual))**ß
-
-            # Compute the overall penalty for all equality constraints H(x)
             equalityPenalty = 0
-            if len(self._problem["Constraints"]["Equality"]) == 0:
-                for constraint in self._problem["Constraints"]["Equality"]:
-                    equalityPenalty += abs(constraint(individual))**Y
+            for constraint in self._problem["Constraints"]:
+                # Compute the overall penalty for all inequality constraints G(x)
+                if constraint["type"] == "inequality":
+                    inequalityPenalty += (0.1 * np.linalg.norm(self._gradient(constraint["function"], individual)) * max(0, constraint["function"](individual)))**2
 
-            fitness = self._problem["Equation"](individual) + (c1*inequalityPenalty + c2*equalityPenalty)
+                # Compute the overall penalty for all equality constraints H(x)
+                else:
+                    equalityPenalty += (0.001 * np.linalg.norm(self._gradient(constraint["function"], individual)) * abs(constraint["function"](individual)))**1
 
+            fitness = self._problem["Equation"](individual) + (inequalityPenalty + equalityPenalty)
             fitnessList.append(fitness)
 
         return fitnessList
@@ -188,8 +187,147 @@ class RealGA():
 
         return newPopulation 
 
-GA = RealGA(PROBLEMS["G1"], 100)
-evaluations, solutions = GA.run(100)
+# Define the problem
 
-for ans, sol, in zip(evaluations, solutions):
-    print(f"f({",   ".join([str(s) for s in sol])}) = {ans}")
+PROBLEMS = {
+    "G1" : {
+        "Equation" : lambda x: 5*x[0] + 5*x[1] + 5*x[2] + 5*x[3] - 5*sum([i**2 for i in x[0:5]]) - sum(x[4:]),
+        "Constraints" : [
+            {"type": "inequality", "function": lambda x: 2*x[0] + 2*x[1] + x[9] + x[10] - 10},
+            {"type": "inequality", "function": lambda x: -8*x[0] + x[9]},
+            {"type": "inequality", "function": lambda x: -2*x[3] - x[4] + 10},
+            {"type": "inequality", "function": lambda x: 2*x[0] + 2*x[2] + x[9] + x[11]-10},
+            {"type": "inequality", "function": lambda x: -8*x[1] + x[10]},
+            {"type": "inequality", "function": lambda x: -2*x[5] - x[6] + x[10]},
+            {"type": "inequality", "function": lambda x: 2*x[1] + 2*x[2] + x[10] + x[11]-10},
+            {"type": "inequality", "function": lambda x: -8*x[2] + x[11]},
+            {"type": "inequality", "function": lambda x: -2*x[7] - x[8] + x[11]}
+        ],
+        "Optimal" : {
+            "Solution" : [
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 1
+            ],
+            "Evaluation" : -15
+        },
+        "Bounds" : [
+            (0, 1),
+            (0, 1),
+            (0, 1),
+            (0, 1),
+            (0, 1),
+            (0, 1),
+            (0, 1),
+            (0, 1),
+            (0, 1),
+            (0, 100),
+            (0, 100),
+            (0, 100),
+            (0, 1)
+        ]
+    },
+
+    "G4" : {
+        "Equation" : lambda x: 5.3578547*x[2]**2 + 0.8356891*x[0]*x[4] + 37.293239*x[0] - 40792.141,
+        "Constraints": [
+            {"type": "inequality", "function": lambda x: 85.334407 + 0.0056858*x[1]*x[4] + 0.00026*x[0]*x[3] - 0.0022053*x[2]*x[4] - 92},
+            {"type": "inequality", "function": lambda x: 90 - (80.51249 + 0.0071317*x[1]*x[4] + 0.0029955*x[0]*x[1] + 0.0021813*x[2]**2)},
+            {"type": "inequality", "function": lambda x: 20 - (9.300961 + 0.0047026*x[2]*x[4] + 0.0012547*x[0]*x[2] + 0.0019085*x[4]*x[3])},
+            {"type": "inequality", "function": lambda x:-1*(85.334407 + 0.0056858*x[1]*x[4]+ 0.00026*x[0]*x[3]-0.0022053*x[1]*x[4])},
+            {"type": "inequality", "function": lambda x: 80.51249+0.0071317*x[1]*x[4]+ 0.0029955*x[0]*x[1]+0.0021813*x[2]**2-110},
+            {"type": "inequality", "function": lambda x: 9.300961+0.0047026*x[2]*x[4]+0.0012547*x[0]*x[2]+0.0019085*x[2]*x[3]-25}
+        ],
+        "Optimal" : {
+            "Solution" : [
+                78.0, 33.0, 29.995, 45.0, 36.776
+            ],
+            "Evaluation" : -30665.5
+        },
+        "Bounds" : [
+            (78, 102),
+            (33, 45),
+            (27, 45),
+            (27, 45),
+            (27, 45)
+        ]
+    },
+
+    "G5" : {
+        "Equation" : lambda x: 3*x[0] + 0.000001*x[0]**3 + 2*x[1] + (0.000002/3)*x[1]**3,
+        "Constraints": [
+            {"type": "inequality", "function": lambda x: -x[3] + x[2] - 0.55},
+            {"type": "inequality", "function": lambda x: -x[2] + x[3] - 0.55},
+            {"type": "equality", "function": lambda x: 1000*np.sin(-x[2] - 0.25) + 1000*np.sin(-x[3] - 0.25) + 894.8 - x[0]},
+            {"type": "equality", "function": lambda x: 1000*np.sin(x[2] - 0.25) + 1000*np.sin(x[2] - x[3] - 0.25) + 894.8 - x[1]},
+            {"type": "equality", "function": lambda x: 1000*np.sin(x[3] - 0.25) + 1000*np.sin(x[3] - x[2] - 0.25) + 1294.8},
+        ],
+        "Optimal" : {
+            "Solution" : [
+                679.9453, 1026.067, 0.1188764, -0.3962336
+            ],
+            "Evaluation" : 5126.4981
+        },
+        "Bounds" : [
+            (0, 1200),
+            (0, 1200),
+            (-0.55, 0.55),
+            (-0.55, 0.55)
+        ]
+    },
+
+    "G6" : {
+        "Equation" : lambda x: (x[0] - 10)**3 + (x[1] - 20)**3,
+        "Constraints": [
+            {"type": "inequality", "function": lambda x: - (x[0] - 5)**2 - (x[1] - 5)**2 + 100},
+            {"type": "inequality", "function": lambda x: -1*(-(x[0] - 6)**2 - (x[1] - 5)**2 + 82.81)},
+        ],
+        "Optimal" : {
+            "Solution" : [
+                14.095, 0.84296
+            ],
+            "Evaluation" : -6961.81381
+        },
+        "Bounds" : [
+            (13, 100),
+            (0, 100)
+        ]
+    }
+}
+
+def evaluateConstraints(individual, constraints):
+    total_violation = 0.0
+    violated_constraints = []
+
+    for i, constraint in enumerate(constraints):
+        if constraint["type"] == "inequality":
+            violation = max(0, constraint["function"](individual))
+        elif constraint["type"] == "equality":
+            violation = max(0, abs(constraint["function"](individual)))
+
+        total_violation += violation
+        if violation > 0:  # Only add violated constraints
+            violated_constraints.append(i)
+
+    return total_violation, violated_constraints
+
+# Run the algorithm for each problem 30 times and store the results in separate CSV files
+for problem_name, problem in PROBLEMS.items():
+    results = []
+
+    for run in range(5):
+        GA = RealGA(problem, 50)
+        solutions, individuals = GA.run(200)
+        constraint_violation, violated_constraints = evaluateConstraints(individuals[-1], problem["Constraints"])
+
+        results.append({
+            "Problem" : problem_name,
+            "Run" : run + 1,
+            "Best Solution" : list(individuals[-1]),
+            "Best Value" : solutions[-1],
+            "Constraint Violation": constraint_violation,
+            "Violated Constraints Indexes": violated_constraints
+        })
+
+    # Convert results to DataFrame and save to CSV for the current problem
+    results_df = pd.DataFrame(results)
+    results_df.to_csv(f"GeneticAlg_{problem_name}_results.csv", index=False)
+    
