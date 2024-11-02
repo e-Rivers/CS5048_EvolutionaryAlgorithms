@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 class DifferentialEvolution:
-    def __init__(self, function, bounds, constraints, popSize=20, maxIter=100, F=0.1, P_r=0.1, epsilon=1e-6, penalty_factor=1e6):
+    def __init__(self, function, bounds, constraints, popSize=20, maxIter=100, F=0.1, P_r=0.9, epsilon=1e-6, penalty_factor=1e6):
         self.popSize = popSize
         self.bounds = bounds
         self.constraints = constraints
@@ -31,9 +31,9 @@ class DifferentialEvolution:
 
         for i, constraint in enumerate(self.constraints):
             if constraint['type'] == 'inequality':
-                violation = max(0, constraint['function'](individual))
+                violation = max(0, constraint['function'](individual))**3
             elif constraint['type'] == 'equality':
-                violation = max(0, abs(constraint['function'](individual)))
+                violation = max(0, abs(constraint['function'](individual)))**3
 
             total_violation += violation
             if violation > 0:  # Only add violated constraints
@@ -42,25 +42,38 @@ class DifferentialEvolution:
         return total_violation, violated_constraints
 
     def stochasticRanking(self, population):
-        """Sort the population by feasibility and fitness using stochastic ranking."""
+        """Sort the population by feasibility and fitness using stochastic ranking with probability factor F."""
         popSize = len(population)
-        rank = list(range(popSize))
-
+        fit = [self.fitnessWithPenalty(ind) for ind in population]
+        penalties = [self.evaluateConstraints(ind)[0] for ind in population]
+        
+        # Sort population based on stochastic ranking
         for i in range(popSize):
+            swapped = False
             for j in range(popSize - 1):
-                a, b = population[rank[j]], population[rank[j + 1]]
-                
-                violation_a, _ = self.evaluateConstraints(a)
-                violation_b, _ = self.evaluateConstraints(b)
+                u = np.random.rand()
+                # Check stochastic condition or equal penalties
+                if (u < self.F or penalties[j] == penalties[j + 1]) and penalties[j] == 0 :
+                    # Sort by fitness if condition met
+                    if fit[j] > fit[j + 1]:
+                        population[j], population[j + 1] = population[j + 1], population[j]
+                        fit[j], fit[j + 1] = fit[j + 1], fit[j]
+                        penalties[j], penalties[j + 1] = penalties[j + 1], penalties[j]
+                        swapped = True
+                else:
+                    # Sort by penalty otherwise
+                    if penalties[j] > penalties[j + 1]:
+                        population[j], population[j + 1] = population[j + 1], population[j]
+                        fit[j], fit[j + 1] = fit[j + 1], fit[j]
+                        penalties[j], penalties[j + 1] = penalties[j + 1], penalties[j]
+                        swapped = True
 
-                if violation_a < violation_b:
-                    rank[j], rank[j + 1] = rank[j + 1], rank[j]
-                elif violation_a == violation_b:
-                    if self.fitnessWithPenalty(a) > self.fitnessWithPenalty(b):
-                        rank[j], rank[j + 1] = rank[j + 1], rank[j]
+            if not swapped:
+                break
 
-        sorted_population = [population[r] for r in rank]
-        return sorted_population
+        #print(penalties)
+        return population
+
 
     def mutation(self, target):
         indices = [i for i in range(self.popSize) if i != target]
@@ -106,9 +119,12 @@ class DifferentialEvolution:
             self.population = self.stochasticRanking(newPopulation)
 
             bestIndex = np.argmin([self.fitnessWithPenalty(ind) for ind in self.population])
-            if self.fitnessWithPenalty(self.population[bestIndex]) < self.bestObj:
-                self.bestObj = self.fitnessWithPenalty(self.population[bestIndex])
-                self.bestVector = self.population[bestIndex]
+            #if self.evaluateFitness(self.population[bestIndex]) < self.bestObj:
+            self.bestObj = self.evaluateFitness(self.population[bestIndex])
+            self.bestVector = self.population[bestIndex]
+        
+        #print("YA BASTA", self.evaluateFitness(self.population[bestIndex]))
+        #print(iteration, self.bestObj)
 
         return self.bestVector, self.bestObj
 
@@ -116,17 +132,21 @@ class DifferentialEvolution:
 
 PROBLEMS = {
     "G1" : {
-        "Equation" : lambda x: 5*x[0] + 5*x[1] + 5*x[2] + 5*x[3] - 5*sum([i**2 for i in x[0:5]]) - sum(x[4:]),
-        "Constraints" : [
-            {"type": "inequality", "function": lambda x: 2*x[0] + 2*x[1] + x[9] + x[10] - 10},
-            {"type": "inequality", "function": lambda x: -8*x[0] + x[9]},
-            {"type": "inequality", "function": lambda x: -2*x[3] - x[4] + 10},
-            {"type": "inequality", "function": lambda x: 2*x[0] + 2*x[2] + x[9] + x[11]-10},
-            {"type": "inequality", "function": lambda x: -8*x[1] + x[10]},
-            {"type": "inequality", "function": lambda x: -2*x[5] - x[6] + x[10]},
-            {"type": "inequality", "function": lambda x: 2*x[1] + 2*x[2] + x[10] + x[11]-10},
-            {"type": "inequality", "function": lambda x: -8*x[2] + x[11]},
-            {"type": "inequality", "function": lambda x: -2*x[7] - x[8] + x[11]}
+        "Equation": lambda x: (
+            5 * x[0] + 5 * x[1] + 5 * x[2] + 5 * x[3]
+            - 5 * (x[0]**2 + x[1]**2 + x[2]**2 + x[3]**2)
+            - (x[4] + x[5] + x[6] + x[7] + x[8] + x[9] + x[10] + x[11] + x[12])
+        ),
+        "Constraints": [
+            {"type": "inequality", "function": lambda x: 2 * x[0] + 2 * x[1] + x[9] + x[10] - 10},
+            {"type": "inequality", "function": lambda x: 2 * x[0] + 2 * x[2] + x[9] + x[11] - 10},
+            {"type": "inequality", "function": lambda x: 2 * x[1] + 2 * x[2] + x[10] + x[11] - 10},
+            {"type": "inequality", "function": lambda x: -8 * x[0] + x[9]},
+            {"type": "inequality", "function": lambda x: -8 * x[1] + x[10]},
+            {"type": "inequality", "function": lambda x: -8 * x[2] + x[11]},
+            {"type": "inequality", "function": lambda x: -2 * x[3] - x[4] + x[9]},
+            {"type": "inequality", "function": lambda x: -2 * x[5] - x[6] + x[10]},
+            {"type": "inequality", "function": lambda x: -2 * x[7] - x[8] + x[11]}
         ],
         "Optimal" : {
             "Solution" : [
@@ -152,14 +172,16 @@ PROBLEMS = {
     },
 
     "G4" : {
-        "Equation" : lambda x: 5.3578547*x[2]**2 + 0.8356891*x[0]*x[4] + 37.293239*x[0] - 40792.141,
+        "Equation": lambda x: (
+            5.3578547 * x[2]**2 + 0.8356891 * x[0] * x[4] + 37.293239 * x[0] - 40792.141
+        ),
         "Constraints": [
-            {"type": "inequality", "function": lambda x: 85.334407 + 0.0056858*x[1]*x[4] + 0.00026*x[0]*x[3] - 0.0022053*x[2]*x[4] - 92},
-            {"type": "inequality", "function": lambda x: 90 - (80.51249 + 0.0071317*x[1]*x[4] + 0.0029955*x[0]*x[1] + 0.0021813*x[2]**2)},
-            {"type": "inequality", "function": lambda x: 20 - (9.300961 + 0.0047026*x[2]*x[4] + 0.0012547*x[0]*x[2] + 0.0019085*x[4]*x[3])},
-            {"type": "inequality", "function": lambda x:-1*(85.334407 + 0.0056858*x[1]*x[4]+ 0.00026*x[0]*x[3]-0.0022053*x[1]*x[4])},
-            {"type": "inequality", "function": lambda x: 80.51249+0.0071317*x[1]*x[4]+ 0.0029955*x[0]*x[1]+0.0021813*x[2]**2-110},
-            {"type": "inequality", "function": lambda x: 9.300961+0.0047026*x[2]*x[4]+0.0012547*x[0]*x[2]+0.0019085*x[2]*x[3]-25}
+            {"type": "inequality", "function": lambda x: 85.334407 + 0.0056858 * x[1] * x[4] + 0.00026 * x[0] * x[3] - 0.0022053 * x[2] * x[4] - 92},
+            {"type": "inequality", "function": lambda x: -1 * (85.334407 + 0.0056858 * x[1] * x[4] + 0.00026 * x[0] * x[3] - 0.0022053 * x[2] * x[4])},
+            {"type": "inequality", "function": lambda x: 80.51249 + 0.0071317 * x[1] * x[4] + 0.0029955 * x[0] * x[1] + 0.0021813 * x[2]**2 - 110},
+            {"type": "inequality", "function": lambda x: -1 * (80.51249 + 0.0071317 * x[1] * x[4] + 0.0029955 * x[0] * x[1] + 0.0021813 * x[2]**2) + 90},
+            {"type": "inequality", "function": lambda x: 9.300961 + 0.0047026 * x[2] * x[4] + 0.0012547 * x[0] * x[2] + 0.0019085 * x[2] * x[3] - 25},
+            {"type": "inequality", "function": lambda x: -1 * (9.300961 + 0.0047026 * x[2] * x[4] + 0.0012547 * x[0] * x[2] + 0.0019085 * x[2] * x[3]) + 20}
         ],
         "Optimal" : {
             "Solution" : [
@@ -177,7 +199,7 @@ PROBLEMS = {
     },
 
     "G5" : {
-        "Equation" : lambda x: 3*x[0] + 0.000001*x[0]**3 + 2*x[1] + (0.000002/3)*x[1]**3,
+        "Equation" : lambda x: 3*x[0] + 0.000001*x[0]**3 + 2*x[1] + 0.000002/3*x[1]**3,
         "Constraints": [
             {"type": "inequality", "function": lambda x: -x[3] + x[2] - 0.55},
             {"type": "inequality", "function": lambda x: -x[2] + x[3] - 0.55},
@@ -222,7 +244,7 @@ PROBLEMS = {
 
 # Run the optimizer for a specific problem
 
-problem = PROBLEMS["G6"]
+problem = PROBLEMS["G1"]
 optimizer = DifferentialEvolution(
     function=problem["Equation"],
     bounds=problem["Bounds"],
