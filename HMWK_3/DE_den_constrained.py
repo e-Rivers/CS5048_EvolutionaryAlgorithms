@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 class DifferentialEvolution:
-    def __init__(self, function, bounds, constraints, popSize=20, maxIter=100, F=0.1, P_r=0.8, epsilon=1e-6, penalty_factor=1e6):
+    def __init__(self, function, bounds, constraints, popSize=20, maxIter=100, F=0.1, P_r=0.9, epsilon=1e-6, penalty_factor=1e6):
         self.popSize = popSize
         self.bounds = bounds
         self.constraints = constraints
@@ -71,6 +71,7 @@ class DifferentialEvolution:
             if not swapped:
                 break
 
+        #print(penalties)
         return population
 
 
@@ -118,9 +119,12 @@ class DifferentialEvolution:
             self.population = self.stochasticRanking(newPopulation)
 
             bestIndex = np.argmin([self.fitnessWithPenalty(ind) for ind in self.population])
-            if self.fitnessWithPenalty(self.population[bestIndex]) < self.bestObj:
-                self.bestObj = self.fitnessWithPenalty(self.population[bestIndex])
-                self.bestVector = self.population[bestIndex]
+            #if self.evaluateFitness(self.population[bestIndex]) < self.bestObj:
+            self.bestObj = self.evaluateFitness(self.population[bestIndex])
+            self.bestVector = self.population[bestIndex]
+        
+        #print("YA BASTA", self.evaluateFitness(self.population[bestIndex]))
+        #print(iteration, self.bestObj)
 
         return self.bestVector, self.bestObj
 
@@ -240,7 +244,7 @@ PROBLEMS = {
 
 # Run the optimizer for a specific problem
 
-problem = PROBLEMS["G6"]
+problem = PROBLEMS["G1"]
 optimizer = DifferentialEvolution(
     function=problem["Equation"],
     bounds=problem["Bounds"],
