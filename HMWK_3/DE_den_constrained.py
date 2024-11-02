@@ -1,7 +1,8 @@
 import numpy as np
+import pandas as pd
 
 class DifferentialEvolution:
-    def __init__(self, function, bounds, constraints, popSize=20, maxIter=100, F=0.1, P_r=0.1, epsilon=1e-6):
+    def __init__(self, function, bounds, constraints, popSize=20, maxIter=100, F=0.1, P_r=0.1, epsilon=1e-6, penalty_factor=1e6):
         self.popSize = popSize
         self.bounds = bounds
         self.constraints = constraints
@@ -15,6 +16,7 @@ class DifferentialEvolution:
         self.objValues = [self.evaluateFitness(individual) for individual in self.population]
         self.bestVector = self.population[np.argmin(self.objValues)]
         self.bestObj = np.min(self.objValues)
+        self.penalty_factor = penalty_factor
 
     def initPopulation(self):
         return np.array([
@@ -31,7 +33,7 @@ class DifferentialEvolution:
             if constraint['type'] == 'inequality':
                 violation = max(0, constraint['function'](individual))
             elif constraint['type'] == 'equality':
-                violation = max(0, abs(constraint['function'](individual)) - self.epsilon)
+                violation = max(0, abs(constraint['function'](individual)))
 
             total_violation += violation
             if violation > 0:  # Only add violated constraints
@@ -54,14 +56,11 @@ class DifferentialEvolution:
                 if violation_a < violation_b:
                     rank[j], rank[j + 1] = rank[j + 1], rank[j]
                 elif violation_a == violation_b:
-                    if self.evaluateFitness(a) > self.evaluateFitness(b):
+                    if self.fitnessWithPenalty(a) > self.fitnessWithPenalty(b):
                         rank[j], rank[j + 1] = rank[j + 1], rank[j]
 
         sorted_population = [population[r] for r in rank]
-        sorted_fitness = [self.evaluateFitness(ind) for ind in sorted_population]
-        
-
-        return [population[r] for r in rank]
+        return sorted_population
 
     def mutation(self, target):
         indices = [i for i in range(self.popSize) if i != target]
@@ -76,6 +75,17 @@ class DifferentialEvolution:
             if np.random.rand() < self.P_r:
                 trial[i] = mutant[i]
         return trial
+    
+    def fitnessWithPenalty(self, individual):
+        """Evaluate fitness with penalty for constraint violations."""
+        fitness = self.evaluateFitness(individual)
+        violation, _ = self.evaluateConstraints(individual)
+        
+        # Add a penalty if the individual is infeasible
+        if violation > 0:
+            fitness += self.penalty_factor * violation
+            
+        return fitness
 
     def optimize(self):
         for iteration in range(self.maxIter):
@@ -84,21 +94,20 @@ class DifferentialEvolution:
                 mutant = self.mutation(i)
                 trial = self.crossover(i, mutant)
 
-                fitness_trial = self.evaluateFitness(trial)
-                fitness_current = self.evaluateFitness(self.population[i])
-                violation_trial, violated_constraints_trial = self.evaluateConstraints(trial)
-                violation_current, violated_constraints_current = self.evaluateConstraints(self.population[i])
+                # Evaluate fitness with penalty
+                fitness_trial = self.fitnessWithPenalty(trial)
+                fitness_current = self.fitnessWithPenalty(self.population[i])
 
-                if fitness_trial < fitness_current or violation_trial < violation_current:
+                if fitness_trial < fitness_current:
                     newPopulation.append(trial)
                 else:
                     newPopulation.append(self.population[i])
 
             self.population = self.stochasticRanking(newPopulation)
 
-            bestIndex = np.argmin([self.evaluateFitness(ind) for ind in self.population])
-            if self.evaluateFitness(self.population[bestIndex]) < self.bestObj:
-                self.bestObj = self.evaluateFitness(self.population[bestIndex])
+            bestIndex = np.argmin([self.fitnessWithPenalty(ind) for ind in self.population])
+            if self.fitnessWithPenalty(self.population[bestIndex]) < self.bestObj:
+                self.bestObj = self.fitnessWithPenalty(self.population[bestIndex])
                 self.bestVector = self.population[bestIndex]
 
         return self.bestVector, self.bestObj
@@ -148,6 +157,9 @@ PROBLEMS = {
             {"type": "inequality", "function": lambda x: 85.334407 + 0.0056858*x[1]*x[4] + 0.00026*x[0]*x[3] - 0.0022053*x[2]*x[4] - 92},
             {"type": "inequality", "function": lambda x: 90 - (80.51249 + 0.0071317*x[1]*x[4] + 0.0029955*x[0]*x[1] + 0.0021813*x[2]**2)},
             {"type": "inequality", "function": lambda x: 20 - (9.300961 + 0.0047026*x[2]*x[4] + 0.0012547*x[0]*x[2] + 0.0019085*x[4]*x[3])},
+            {"type": "inequality", "function": lambda x:-1*(85.334407 + 0.0056858*x[1]*x[4]+ 0.00026*x[0]*x[3]-0.0022053*x[1]*x[4])},
+            {"type": "inequality", "function": lambda x: 80.51249+0.0071317*x[1]*x[4]+ 0.0029955*x[0]*x[1]+0.0021813*x[2]**2-110},
+            {"type": "inequality", "function": lambda x: 9.300961+0.0047026*x[2]*x[4]+0.0012547*x[0]*x[2]+0.0019085*x[2]*x[3]-25}
         ],
         "Optimal" : {
             "Solution" : [
@@ -165,10 +177,10 @@ PROBLEMS = {
     },
 
     "G5" : {
-        "Equation" : lambda x: 3*x[0] + 0.000001*x[0]**3 + 2*x[1] + 0.000002/3*x[1]**3,
+        "Equation" : lambda x: 3*x[0] + 0.000001*x[0]**3 + 2*x[1] + (0.000002/3)*x[1]**3,
         "Constraints": [
-            {"type": "inequality", "function": lambda x: x[3] - x[2] + 0.55},
-            {"type": "inequality", "function": lambda x: x[2] - x[3] + 0.55},
+            {"type": "inequality", "function": lambda x: -x[3] + x[2] - 0.55},
+            {"type": "inequality", "function": lambda x: -x[2] + x[3] - 0.55},
             {"type": "equality", "function": lambda x: 1000*np.sin(-x[2] - 0.25) + 1000*np.sin(-x[3] - 0.25) + 894.8 - x[0]},
             {"type": "equality", "function": lambda x: 1000*np.sin(x[2] - 0.25) + 1000*np.sin(x[2] - x[3] - 0.25) + 894.8 - x[1]},
             {"type": "equality", "function": lambda x: 1000*np.sin(x[3] - 0.25) + 1000*np.sin(x[3] - x[2] - 0.25) + 1294.8},
@@ -190,8 +202,8 @@ PROBLEMS = {
     "G6" : {
         "Equation" : lambda x: (x[0] - 10)**3 + (x[1] - 20)**3,
         "Constraints": [
-            {"type": "inequality", "function": lambda x: (x[0] - 5)**2 + (x[1] - 5)**2 - 100},
-            {"type": "inequality", "function": lambda x: -(x[0] - 6)**2 - (x[1] - 5)**2 + 82.81},
+            {"type": "inequality", "function": lambda x: - (x[0] - 5)**2 - (x[1] - 5)**2 + 100},
+            {"type": "inequality", "function": lambda x: -1*(-(x[0] - 6)**2 - (x[1] - 5)**2 + 82.81)},
         ],
         "Optimal" : {
             "Solution" : [
@@ -209,7 +221,8 @@ PROBLEMS = {
 
 
 # Run the optimizer for a specific problem
-problem = PROBLEMS["G1"]
+
+problem = PROBLEMS["G6"]
 optimizer = DifferentialEvolution(
     function=problem["Equation"],
     bounds=problem["Bounds"],
@@ -232,3 +245,32 @@ if violation > 0:
 else:
     print("All constraints satisfied.")
 
+
+# Run the algorithm for each problem 30 times and store the results in separate CSV files
+for problem_name, problem in PROBLEMS.items():
+    results = []
+
+    for run in range(30):
+        de = DifferentialEvolution(
+            function=problem["Equation"],
+            bounds=problem["Bounds"],
+            constraints=problem["Constraints"],
+            popSize=20,
+            maxIter=100,
+            F=0.5,
+            P_r=0.7
+        )
+        best_solution, best_value = de.optimize()
+        constraint_violation, violated_constraints = de.evaluateConstraints(best_solution)
+        results.append({
+            "Problem": problem_name,
+            "Run": run + 1,
+            "Best Solution": best_solution,
+            "Best Value": best_value,
+            "Constraint Violation": constraint_violation,
+            "Violated Constraints Indexes": violated_constraints
+        })
+
+    # Convert results to DataFrame and save to CSV for the current problem
+    results_df = pd.DataFrame(results)
+    results_df.to_csv(f"results_de_constrained/{problem_name}_results.csv", index=False)
