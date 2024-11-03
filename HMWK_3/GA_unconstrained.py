@@ -232,7 +232,7 @@ problems = [
     ]
 
 executions = 30
-num_generations = 100
+num_generations = 1000
 
 for func, bounds, problem_name, dimensions in problems:
     print(f"Running Genetic Algorithm on {problem_name} for {executions} executions...")
@@ -241,7 +241,7 @@ for func, bounds, problem_name, dimensions in problems:
     
     for execution in range(executions):
         print(f"Execution {execution + 1}/{executions}")
-        ga = RealGA(lowerBound=bounds[0], upperBound=bounds[1], varNum=dimensions, func=func, popu_size=50, Pc=0.9, Pm=0.1)
+        ga = RealGA(lowerBound=bounds[0], upperBound=bounds[1], varNum=dimensions, func=func, popu_size=100, Pc=0.2, Pm=0.5)
         best_solutions, _ = ga.run(num_generations=num_generations)
         
         for generation, best_solution in enumerate(best_solutions):
