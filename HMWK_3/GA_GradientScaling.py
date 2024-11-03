@@ -40,11 +40,13 @@ class RealGA():
             for constraint in self._problem["Constraints"]:
                 # Compute the overall penalty for all inequality constraints G(x)
                 if constraint["type"] == "inequality":
-                    inequalityPenalty += (0.1 * np.linalg.norm(self._gradient(constraint["function"], individual)) * max(0, constraint["function"](individual)))**2
+                    #inequalityPenalty += (0.075 * np.linalg.norm(self._gradient(constraint["function"], individual)) * max(0, constraint["function"](individual)))**2
+                    inequalityPenalty += 0.075 * np.linalg.norm(self._gradient(constraint["function"], individual)) * max(0, constraint["function"](individual))**2
 
                 # Compute the overall penalty for all equality constraints H(x)
                 else:
-                    equalityPenalty += (0.001 * np.linalg.norm(self._gradient(constraint["function"], individual)) * abs(constraint["function"](individual)))**1
+                    #equalityPenalty += (0.001 * np.linalg.norm(self._gradient(constraint["function"], individual)) * abs(constraint["function"](individual)))**2
+                    equalityPenalty += 0.001 * np.linalg.norm(self._gradient(constraint["function"], individual)) * abs(constraint["function"](individual))**2
 
             fitness = self._problem["Equation"](individual) + (inequalityPenalty + equalityPenalty)
             fitnessList.append(fitness)
@@ -89,9 +91,11 @@ class RealGA():
     def _limitIndividual(self, individual):
         for gene in range(self._vars):
             if individual[gene] > self._x_max[gene]:
-                individual[gene] = self._x_max[gene]
+                #individual[gene] = self._x_max[gene]
+                individual[gene] = np.random.uniform(self._x_min[gene], self._x_max[gene])
             elif individual[gene] < self._x_min[gene]:
-                individual[gene] = self._x_min[gene]
+                #individual[gene] = self._x_min[gene]
+                individual[gene] = np.random.uniform(self._x_min[gene], self._x_max[gene])
 
         return individual 
 
@@ -191,17 +195,21 @@ class RealGA():
 
 PROBLEMS = {
     "G1" : {
-        "Equation" : lambda x: 5*x[0] + 5*x[1] + 5*x[2] + 5*x[3] - 5*sum([i**2 for i in x[0:5]]) - sum(x[4:]),
-        "Constraints" : [
-            {"type": "inequality", "function": lambda x: 2*x[0] + 2*x[1] + x[9] + x[10] - 10},
-            {"type": "inequality", "function": lambda x: -8*x[0] + x[9]},
-            {"type": "inequality", "function": lambda x: -2*x[3] - x[4] + 10},
-            {"type": "inequality", "function": lambda x: 2*x[0] + 2*x[2] + x[9] + x[11]-10},
-            {"type": "inequality", "function": lambda x: -8*x[1] + x[10]},
-            {"type": "inequality", "function": lambda x: -2*x[5] - x[6] + x[10]},
-            {"type": "inequality", "function": lambda x: 2*x[1] + 2*x[2] + x[10] + x[11]-10},
-            {"type": "inequality", "function": lambda x: -8*x[2] + x[11]},
-            {"type": "inequality", "function": lambda x: -2*x[7] - x[8] + x[11]}
+        "Equation": lambda x: (
+            5 * x[0] + 5 * x[1] + 5 * x[2] + 5 * x[3]
+            - 5 * (x[0]**2 + x[1]**2 + x[2]**2 + x[3]**2)
+            - (x[4] + x[5] + x[6] + x[7] + x[8] + x[9] + x[10] + x[11] + x[12])
+        ),
+        "Constraints": [
+            {"type": "inequality", "function": lambda x: 2 * x[0] + 2 * x[1] + x[9] + x[10] - 10},
+            {"type": "inequality", "function": lambda x: 2 * x[0] + 2 * x[2] + x[9] + x[11] - 10},
+            {"type": "inequality", "function": lambda x: 2 * x[1] + 2 * x[2] + x[10] + x[11] - 10},
+            {"type": "inequality", "function": lambda x: -8 * x[0] + x[9]},
+            {"type": "inequality", "function": lambda x: -8 * x[1] + x[10]},
+            {"type": "inequality", "function": lambda x: -8 * x[2] + x[11]},
+            {"type": "inequality", "function": lambda x: -2 * x[3] - x[4] + x[9]},
+            {"type": "inequality", "function": lambda x: -2 * x[5] - x[6] + x[10]},
+            {"type": "inequality", "function": lambda x: -2 * x[7] - x[8] + x[11]}
         ],
         "Optimal" : {
             "Solution" : [
@@ -227,14 +235,16 @@ PROBLEMS = {
     },
 
     "G4" : {
-        "Equation" : lambda x: 5.3578547*x[2]**2 + 0.8356891*x[0]*x[4] + 37.293239*x[0] - 40792.141,
+        "Equation": lambda x: (
+            5.3578547 * x[2]**2 + 0.8356891 * x[0] * x[4] + 37.293239 * x[0] - 40792.141
+        ),
         "Constraints": [
-            {"type": "inequality", "function": lambda x: 85.334407 + 0.0056858*x[1]*x[4] + 0.00026*x[0]*x[3] - 0.0022053*x[2]*x[4] - 92},
-            {"type": "inequality", "function": lambda x: 90 - (80.51249 + 0.0071317*x[1]*x[4] + 0.0029955*x[0]*x[1] + 0.0021813*x[2]**2)},
-            {"type": "inequality", "function": lambda x: 20 - (9.300961 + 0.0047026*x[2]*x[4] + 0.0012547*x[0]*x[2] + 0.0019085*x[4]*x[3])},
-            {"type": "inequality", "function": lambda x:-1*(85.334407 + 0.0056858*x[1]*x[4]+ 0.00026*x[0]*x[3]-0.0022053*x[1]*x[4])},
-            {"type": "inequality", "function": lambda x: 80.51249+0.0071317*x[1]*x[4]+ 0.0029955*x[0]*x[1]+0.0021813*x[2]**2-110},
-            {"type": "inequality", "function": lambda x: 9.300961+0.0047026*x[2]*x[4]+0.0012547*x[0]*x[2]+0.0019085*x[2]*x[3]-25}
+            {"type": "inequality", "function": lambda x: 85.334407 + 0.0056858 * x[1] * x[4] + 0.00026 * x[0] * x[3] - 0.0022053 * x[2] * x[4] - 92},
+            {"type": "inequality", "function": lambda x: -1 * (85.334407 + 0.0056858 * x[1] * x[4] + 0.00026 * x[0] * x[3] - 0.0022053 * x[2] * x[4])},
+            {"type": "inequality", "function": lambda x: 80.51249 + 0.0071317 * x[1] * x[4] + 0.0029955 * x[0] * x[1] + 0.0021813 * x[2]**2 - 110},
+            {"type": "inequality", "function": lambda x: -1 * (80.51249 + 0.0071317 * x[1] * x[4] + 0.0029955 * x[0] * x[1] + 0.0021813 * x[2]**2) + 90},
+            {"type": "inequality", "function": lambda x: 9.300961 + 0.0047026 * x[2] * x[4] + 0.0012547 * x[0] * x[2] + 0.0019085 * x[2] * x[3] - 25},
+            {"type": "inequality", "function": lambda x: -1 * (9.300961 + 0.0047026 * x[2] * x[4] + 0.0012547 * x[0] * x[2] + 0.0019085 * x[2] * x[3]) + 20}
         ],
         "Optimal" : {
             "Solution" : [
@@ -252,7 +262,7 @@ PROBLEMS = {
     },
 
     "G5" : {
-        "Equation" : lambda x: 3*x[0] + 0.000001*x[0]**3 + 2*x[1] + (0.000002/3)*x[1]**3,
+        "Equation" : lambda x: 3*x[0] + 0.000001*x[0]**3 + 2*x[1] + 0.000002/3*x[1]**3,
         "Constraints": [
             {"type": "inequality", "function": lambda x: -x[3] + x[2] - 0.55},
             {"type": "inequality", "function": lambda x: -x[2] + x[3] - 0.55},
@@ -293,6 +303,7 @@ PROBLEMS = {
     }
 }
 
+
 def evaluateConstraints(individual, constraints):
     total_violation = 0.0
     violated_constraints = []
@@ -313,7 +324,7 @@ def evaluateConstraints(individual, constraints):
 for problem_name, problem in PROBLEMS.items():
     results = []
 
-    for run in range(5):
+    for run in range(30):
         GA = RealGA(problem, 50)
         solutions, individuals = GA.run(200)
         constraint_violation, violated_constraints = evaluateConstraints(individuals[-1], problem["Constraints"])
@@ -321,7 +332,7 @@ for problem_name, problem in PROBLEMS.items():
         results.append({
             "Problem" : problem_name,
             "Run" : run + 1,
-            "Best Solution" : list(individuals[-1]),
+            "Best Solution" : individuals[-1],
             "Best Value" : solutions[-1],
             "Constraint Violation": constraint_violation,
             "Violated Constraints Indexes": violated_constraints
@@ -329,5 +340,5 @@ for problem_name, problem in PROBLEMS.items():
 
     # Convert results to DataFrame and save to CSV for the current problem
     results_df = pd.DataFrame(results)
-    results_df.to_csv(f"GeneticAlg_{problem_name}_results.csv", index=False)
+    results_df.to_csv(f"results_ga_constrained/Scaling/GeneticAlg_{problem_name}_results.csv", index=False)
     
