@@ -1,9 +1,9 @@
 # Homework 3. Optimization problems with PSO, GA, DE and Constraint Handling Techniques
 
-Denisse Chacón Ramírez -  <br />
-Emilio Rios Ochoa - 
+Denisse Chacón Ramírez - A01562077 <br />
+Emilio Rios Ochoa - A01378965
 
-## Code Execution Instructions and Explanationw
+## Code Execution Instructions and Explanation
 
 Each file already contains the necessary information to solve all the problems, so running them just requires the execution of `python3 filename.py` (`py filename.py` for Windows).<br />
 In case it is desired to modify certain parameters about the execution, manual modification of the file itself is required.
