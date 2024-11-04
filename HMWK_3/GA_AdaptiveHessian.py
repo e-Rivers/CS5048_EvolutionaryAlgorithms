@@ -18,11 +18,20 @@ class RealGA():
         self._Pm = None             # Probability of mutation
         self._nc = nc
         self._eta_m = nm
-        self._P = [0.1 for _ in problem["Constraints"]]
+        self._P = [1e-4 for _ in problem["Constraints"]]
 
+    # Numerically compute the gradient
+    def _gradient(self, f, x, epsilon=1e-8):
+        gradient = np.zeros_like(x)
+        for i in range(len(x)):
+            x_plus = np.copy(x)
+            x_minus = np.copy(x)
+            x_plus[i] += epsilon
+            x_minus[i] -= epsilon
+            gradient[i] = (f(x_plus) - f(x_minus)) / (2 * epsilon)
+        return gradient
 
-
-    # Function to calculate Hessian
+    # Numerically compute the hessian matrix
     def _hessian(self, f, x, epsilon=1e-5):
         n = len(x)
         hessian = np.zeros((n, n))
@@ -50,59 +59,22 @@ class RealGA():
             inequalityPenalty = 0
             equalityPenalty = 0
             for i, constraint in enumerate(self._problem["Constraints"]):
-                if constraint["type"] == "inequality":
-                    inequalityPenalty += self._P[i] * max(0, constraint["function"](individual))
-                    hessian = self._hessian(constraint["function"], individual)
-                    self._P[i] -= np.linalg.pinv(hessian).diagonal().sum()
-
-                else:
-                    equalityPenalty += self._P[i] * abs(constraint["function"](individual))
-                    hessian = self._hessian(constraint["function"], individual)
-                    self._P[i] -= np.linalg.pinv(hessian).diagonal().sum()
-
-            fitness = self._problem["Equation"](individual) + (inequalityPenalty + equalityPenalty)
-            fitnessList.append(fitness)
-
-        return fitnessList
-
-
-
-    """
-    def _gradient(self, f, x, epsilon=1e-8):
-        gradient = np.zeros_like(x)
-        for i in range(len(x)):
-            x_plus = np.copy(x)
-            x_minus = np.copy(x)
-            x_plus[i] += epsilon
-            x_minus[i] -= epsilon
-            gradient[i] = (f(x_plus) - f(x_minus)) / (2 * epsilon)
-        return gradient
-
-    # Function to evaluate fitness including constraint handling technique transformation
-    def _evaluation(self, population):
-        fitnessList = []
-
-        for individual in population:
-
-            inequalityPenalty = 0
-            equalityPenalty = 0
-            for i, constraint in enumerate(self._problem["Constraints"]):
                 # Compute the overall penalty for all inequality constraints G(x)
                 if constraint["type"] == "inequality":
-                    inequalityPenalty += self._P[i]  * max(0, constraint["function"](individual))
-                    self._P[i] -= 1e-100 * np.linalg.norm(self._gradient(constraint["function"], individual))
-
+                    inequalityPenalty += self._P[i] * max(0, constraint["function"](individual))
                 # Compute the overall penalty for all equality constraints H(x)
                 else:
                     equalityPenalty += self._P[i] * abs(constraint["function"](individual))
-                    self._P[i] -= 1e-15 * np.linalg.norm(self._gradient(constraint["function"], individual))
+
+                gradient = self._gradient(constraint["function"], individual)
+                hessian = self._hessian(constraint["function"], individual)
+                
+                self._P[i] -= np.dot(gradient, np.linalg.pinv(hessian) @ gradient)
 
             fitness = self._problem["Equation"](individual) + (inequalityPenalty + equalityPenalty)
             fitnessList.append(fitness)
 
         return fitnessList
-        """
-
 
     def run(self, num_generations):
         self.initialize_population()
@@ -112,9 +84,9 @@ class RealGA():
 
         for generation in range(1, num_generations+1):
             fit_list = self._evaluation(self._getPopulation())
-            selected_individuals = self._selection(fit_list)
+            selected_individuals = self._selection()
             children = self._crossover(selected_individuals)
-            mutated_population = self._mutation(children)
+            mutated_population = self._mutation(children, generation)
             self._population = list(mutated_population)
 
             fit_list = self._evaluation(self._getPopulation())
@@ -141,38 +113,24 @@ class RealGA():
     def _limitIndividual(self, individual):
         for gene in range(self._vars):
             if individual[gene] > self._x_max[gene]:
-                #individual[gene] = self._x_max[gene]
-                individual[gene] = np.random.uniform(self._x_min[gene], self._x_max[gene])
+                individual[gene] = self._x_max[gene]
+                #individual[gene] = np.random.uniform(self._x_min[gene], self._x_max[gene])
             elif individual[gene] < self._x_min[gene]:
-                #individual[gene] = self._x_min[gene]
-                individual[gene] = np.random.uniform(self._x_min[gene], self._x_max[gene])
+                individual[gene] = self._x_min[gene]
+                #individual[gene] = np.random.uniform(self._x_min[gene], self._x_max[gene])
 
         return individual 
 
-
-    # Binary tournament selection
-    def _selection(self, fit_list):
-        evaluatedIndividuals = list(zip(self._population.copy(), fit_list))
-
+    # Random parent selection
+    def _selection(self):
         parents = []
         for _ in self._population:
-
-            # Step 1. Shuffle individuals
-            shuffledPop = list(evaluatedIndividuals)
+            shuffledPop = list(self._population)
             np.random.shuffle(shuffledPop)
 
-            # Step 2. Get two random individuals
-            randChoice1 = np.random.randint(0, len(shuffledPop))
-            randChoice2 = np.random.randint(0, len(shuffledPop))
-            candidate1 = shuffledPop[randChoice1]
-            candidate2 = shuffledPop[randChoice2]
-
-            # Step 3. Make them compete based on their fitness
-            fitnessCand1 = candidate1[1]
-            fitnessCand2 = candidate2[1]
-
-            # Step 4. Select the fittest individual (the one that minimizes)
-            parents.append(candidate1[0] if fitnessCand1 < fitnessCand2 else candidate2[0])
+            randChoice = np.random.randint(0, len(shuffledPop))
+            parent = shuffledPop[randChoice]
+            parents.append(parent)
 
         return parents
 
@@ -181,22 +139,16 @@ class RealGA():
         newPopulation = []
 
         for parent1, parent2 in list(zip(parents[::2], parents[1::2])):
-            
-            # Compute the probability of crossover for the current couple
             crossProb = np.random.random()
 
             if crossProb <= self._Pc:
-
-                # Step 1. Compute a random number u between 0 and 1
                 u = np.random.uniform()
 
-                # Step 2. Compute beta_m
                 if u <= 0.5:
                     beta_m = (2*u)**(1 / (self._nc + 1))
                 else:
                     beta_m = (1 / (2*(1 - u)))**(1 / (self._nc + 1))
 
-                # Step 3. Produce children
                 H1 = 0.5 * ((leftSide := (np.array(parent1) + np.array(parent2))) - (rightSide := beta_m*np.abs(np.array(parent2) - np.array(parent1))))
                 H2 = 0.5 * (leftSide + rightSide)
 
@@ -208,7 +160,7 @@ class RealGA():
 
 
     # Parameter-based mutation
-    def _mutation(self, population):
+    def _mutation(self, population, genNum):
         newPopulation = []
         for individual in population:
 
@@ -225,7 +177,7 @@ class RealGA():
                 u = np.random.random()
 
                 # Step 3. Compute delta sub q
-                eta_m = self._eta_m # This actually is calculated as 100 + t, where t = generation num. But for the hwmk, it was required as 20
+                eta_m = 100 + genNum
                 delta = min((gene - self._x_min[i]), (self._x_max[i] - gene)) / (self._x_max[i] - self._x_min[i])
                 if u <= 0.5:
                     delta_q = (2*u + (1-2*u)*(1-delta)**(eta_m+1))**(1 / (eta_m+1)) - 1
@@ -353,7 +305,6 @@ PROBLEMS = {
     }
 }
 
-
 def evaluateConstraints(individual, constraints):
     total_violation = 0.0
     violated_constraints = []
@@ -370,11 +321,14 @@ def evaluateConstraints(individual, constraints):
 
     return total_violation, violated_constraints
 
+import sys
+print(sys.argv[1])
+
 # Run the algorithm for each problem 30 times and store the results in separate CSV files
 for problem_name, problem in PROBLEMS.items():
     results = []
 
-    for run in range(5):
+    for run in range(30):
         GA = RealGA(problem, 50)
         solutions, individuals = GA.run(200)
         constraint_violation, violated_constraints = evaluateConstraints(individuals[-1], problem["Constraints"])
@@ -390,5 +344,5 @@ for problem_name, problem in PROBLEMS.items():
 
     # Convert results to DataFrame and save to CSV for the current problem
     results_df = pd.DataFrame(results)
-    results_df.to_csv(f"results_ga_constrained/Adaptive/GeneticAlg_{problem_name}_results.csv", index=False)
+    results_df.to_csv(f"results_ga_constrained/{sys.argv[1]}_{problem_name}_results.csv", index=False)
     

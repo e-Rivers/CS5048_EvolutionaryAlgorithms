@@ -41,12 +41,12 @@ class RealGA():
                 # Compute the overall penalty for all inequality constraints G(x)
                 if constraint["type"] == "inequality":
                     #inequalityPenalty += (0.075 * np.linalg.norm(self._gradient(constraint["function"], individual)) * max(0, constraint["function"](individual)))**2
-                    inequalityPenalty += 0.075 * np.linalg.norm(self._gradient(constraint["function"], individual)) * max(0, constraint["function"](individual))**2
+                    inequalityPenalty += (1e-10 * np.linalg.norm(self._gradient(constraint["function"], individual)) * max(0, constraint["function"](individual)))**2
 
                 # Compute the overall penalty for all equality constraints H(x)
                 else:
                     #equalityPenalty += (0.001 * np.linalg.norm(self._gradient(constraint["function"], individual)) * abs(constraint["function"](individual)))**2
-                    equalityPenalty += 0.001 * np.linalg.norm(self._gradient(constraint["function"], individual)) * abs(constraint["function"](individual))**2
+                    equalityPenalty += (1e-10 * np.linalg.norm(self._gradient(constraint["function"], individual)) * abs(constraint["function"](individual)))**2
 
             fitness = self._problem["Equation"](individual) + (inequalityPenalty + equalityPenalty)
             fitnessList.append(fitness)
@@ -62,9 +62,9 @@ class RealGA():
 
         for generation in range(1, num_generations+1):
             fit_list = self._evaluation(self._getPopulation())
-            selected_individuals = self._selection(fit_list)
+            selected_individuals = self._selection()
             children = self._crossover(selected_individuals)
-            mutated_population = self._mutation(children)
+            mutated_population = self._mutation(children, generation)
             self._population = list(mutated_population)
 
             fit_list = self._evaluation(self._getPopulation())
@@ -99,30 +99,16 @@ class RealGA():
 
         return individual 
 
-
-    # Binary tournament selection
-    def _selection(self, fit_list):
-        evaluatedIndividuals = list(zip(self._population.copy(), fit_list))
-
+    # Random parent selection
+    def _selection(self):
         parents = []
         for _ in self._population:
-
-            # Step 1. Shuffle individuals
-            shuffledPop = list(evaluatedIndividuals)
+            shuffledPop = list(self._population)
             np.random.shuffle(shuffledPop)
 
-            # Step 2. Get two random individuals
-            randChoice1 = np.random.randint(0, len(shuffledPop))
-            randChoice2 = np.random.randint(0, len(shuffledPop))
-            candidate1 = shuffledPop[randChoice1]
-            candidate2 = shuffledPop[randChoice2]
-
-            # Step 3. Make them compete based on their fitness
-            fitnessCand1 = candidate1[1]
-            fitnessCand2 = candidate2[1]
-
-            # Step 4. Select the fittest individual (the one that minimizes)
-            parents.append(candidate1[0] if fitnessCand1 < fitnessCand2 else candidate2[0])
+            randChoice = np.random.randint(0, len(shuffledPop))
+            parent = shuffledPop[randChoice]
+            parents.append(parent)
 
         return parents
 
@@ -131,22 +117,16 @@ class RealGA():
         newPopulation = []
 
         for parent1, parent2 in list(zip(parents[::2], parents[1::2])):
-            
-            # Compute the probability of crossover for the current couple
             crossProb = np.random.random()
 
             if crossProb <= self._Pc:
-
-                # Step 1. Compute a random number u between 0 and 1
                 u = np.random.uniform()
 
-                # Step 2. Compute beta_m
                 if u <= 0.5:
                     beta_m = (2*u)**(1 / (self._nc + 1))
                 else:
                     beta_m = (1 / (2*(1 - u)))**(1 / (self._nc + 1))
 
-                # Step 3. Produce children
                 H1 = 0.5 * ((leftSide := (np.array(parent1) + np.array(parent2))) - (rightSide := beta_m*np.abs(np.array(parent2) - np.array(parent1))))
                 H2 = 0.5 * (leftSide + rightSide)
 
@@ -158,7 +138,7 @@ class RealGA():
 
 
     # Parameter-based mutation
-    def _mutation(self, population):
+    def _mutation(self, population, genNum):
         newPopulation = []
         for individual in population:
 
@@ -175,7 +155,7 @@ class RealGA():
                 u = np.random.random()
 
                 # Step 3. Compute delta sub q
-                eta_m = self._eta_m # This actually is calculated as 100 + t, where t = generation num. But for the hwmk, it was required as 20
+                eta_m = 100 + genNum
                 delta = min((gene - self._x_min[i]), (self._x_max[i] - gene)) / (self._x_max[i] - self._x_min[i])
                 if u <= 0.5:
                     delta_q = (2*u + (1-2*u)*(1-delta)**(eta_m+1))**(1 / (eta_m+1)) - 1
@@ -324,7 +304,7 @@ def evaluateConstraints(individual, constraints):
 for problem_name, problem in PROBLEMS.items():
     results = []
 
-    for run in range(30):
+    for run in range(5):
         GA = RealGA(problem, 50)
         solutions, individuals = GA.run(200)
         constraint_violation, violated_constraints = evaluateConstraints(individuals[-1], problem["Constraints"])
