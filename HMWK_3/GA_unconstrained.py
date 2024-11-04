@@ -118,12 +118,18 @@ class RealGA(GeneticAlgorithm):
         return [min(max(gene, self._x_min), self._x_max) for gene in individual]
 
     def _selection(self, fit_list):
-        evaluatedIndividuals = list(zip(self._population.copy(), fit_list))
+        evaluated_individuals = list(zip(self._population.copy(), fit_list))
         parents = []
-        for _ in self._population:
-            np.random.shuffle(evaluatedIndividuals)
-            candidate1, candidate2 = random.sample(evaluatedIndividuals, 2)
-            parents.append(candidate1[0] if candidate1[1] < candidate2[1] else candidate2[0])
+        for _ in range(self._popu_size):
+            shuffled_pop = list(evaluated_individuals)
+            np.random.shuffle(shuffled_pop)
+
+            rand_choice1, rand_choice2 = np.random.choice(len(shuffled_pop), 2, replace=False)
+            candidate1, candidate2 = shuffled_pop[rand_choice1], shuffled_pop[rand_choice2]
+
+            fitness_cand1, fitness_cand2 = candidate1[1], candidate2[1]
+            parents.append(candidate1[0] if fitness_cand1 < fitness_cand2 else candidate2[0])
+
         return parents
 
     def _crossover(self, parents):
